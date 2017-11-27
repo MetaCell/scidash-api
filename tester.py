@@ -1,9 +1,5 @@
-from scidash_api.core import ScidashApiUploader
-import scidash_api.settings as settings
+from scidash_api import client
 
-uploader = ScidashApiUploader(server_url=settings.SCIDASH_SERVER_URL,
-        upload_endpoint_url=settings.UPLOAD_URL, filename=settings.FILE_NAME)
+client_instance = client.ScidashClient()
 
-print(uploader.upload_json('{ \
-        "id": 1 \
-}'))
+print(client_instance.login('admin', 'kavabanga'))
