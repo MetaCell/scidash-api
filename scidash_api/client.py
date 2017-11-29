@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function
 import json
 
 import requests
-import settings
+from scidash_api import settings
 
 
 class ScidashClient(object):
@@ -12,11 +12,15 @@ class ScidashClient(object):
     def __init__(self, config=None):
         self.token = None
 
-        # Check, should we use default settings
-        if config is None:
-            self.config = settings.CONFIG
-        else:
-            self.config = config
+        self.config = settings.CONFIG
+
+        if config is not None:
+            self.config.update(config)
+
+    def get_headers(self):
+        return {
+                'Authorization': 'JWT {}'.format(self.token)
+                }
 
     def login(self, username, password):
         """
@@ -31,11 +35,13 @@ class ScidashClient(object):
                 }
 
         auth_url = self.config.get('auth_url')
-        base_url = self.config.get('scidash_server_url')
+        base_url = self.config.get('base_url')
 
         r = requests.post('{}{}'.format(base_url, auth_url), data=credentials)
 
-        return r
+        self.token = r.json().get('token')
+
+        return self
 
     def upload_json(self, data):
         """
@@ -43,7 +49,7 @@ class ScidashClient(object):
 
         :param data: JSON string
         """
-        self._upload(data)
+        return self._upload(data)
 
     def upload_object(self, _object):
         """
@@ -53,7 +59,7 @@ class ScidashClient(object):
         """
         serialized_object = json.dumps(_object)
 
-        self._upload(serialized_object)
+        return self._upload(serialized_object)
 
     def _upload(self, prepared_data):
         """
@@ -63,4 +69,18 @@ class ScidashClient(object):
         :returns: urllib3 requests object
 
         """
-        print(prepared_data)
+        files = {
+                'file': (self.config.get('file_name'), prepared_data)
+                }
+
+        headers = self.get_headers()
+
+        upload_url = \
+            self.config.get('upload_url') \
+            .format(filename=self.config.get('file_name'))
+        base_url = self.config.get('base_url')
+
+        r = requests.put('{}{}'.format(base_url, upload_url), headers=headers,
+                files=files)
+
+        return r
