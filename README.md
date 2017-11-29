@@ -17,7 +17,7 @@ client_instance = client.ScidashClient({
 # config format
 CONFIG = {
     'base_url': 'http://localhost:8000',
-    'upload_url': '/data/upload/{filename}',
+    'upload_url': '/data/upload/{filename}', # {filename} is required, it will be replaced with file name at the time of the request
     'auth_url': '/api/login/',
     'file_name': 'data.json'
 }
