@@ -2,6 +2,7 @@
   "model_instance": {
     "model_class": {
       "class_name": "ReducedModel",
+      "url": "",
       "capabilities": [
         {
           "class_name": "CanBeReduced"
@@ -18,19 +19,21 @@
     "some_related_key": "and_value"
   },
   "score": 1.66666666666667,
+  "score_key": 0.738882680363527,
+  "_class": "ZType",
   "test_instance": {
     "description": null,
-    "build_info": "info",
-    "hostname": "hostname",
     "test_suites": [{
       "name": "ReducedSuite"
     }],
     "test_class": {
-      "class_name": "MyTest"
+      "class_name": "MyTest",
+      "url": ""
     },
     "observation": {
       "mean":"8",
-      "std": "3"
+      "std": "3",
+      "url": ""
     },
     "verbose": 1
   }

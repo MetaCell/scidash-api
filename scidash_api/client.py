@@ -9,7 +9,7 @@ class ScidashClient(object):
 
     """Base client class for all actions with Scidash API"""
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, build_info, hostname):
         self.token = None
 
         self.config = settings.CONFIG
@@ -43,15 +43,15 @@ class ScidashClient(object):
 
         return self
 
-    def upload_json(self, data):
+    def upload_json(self, data, build_info=None, hostname=None):
         """
         Upload method for JSON string
 
         :param data: JSON string
         """
-        return self._upload(data)
+        return self._upload(data, build_info, hostname)
 
-    def upload_object(self, _object):
+    def upload_object(self, _object, build_info=None, hostname=None):
         """
         Upload method for serializable object
 
@@ -59,9 +59,9 @@ class ScidashClient(object):
         """
         serialized_object = json.dumps(_object)
 
-        return self._upload(serialized_object)
+        return self._upload(serialized_object, build_info, hostname)
 
-    def _upload(self, prepared_data):
+    def _upload(self, prepared_data, build_info, hostname):
         """
         Private main method for uploading
 
@@ -69,6 +69,12 @@ class ScidashClient(object):
         :returns: urllib3 requests object
 
         """
+
+        prepared_data.get('test_instance').update({
+            'build_info': build_info,
+            'hostname': hostname
+        })
+
         files = {
                 'file': (self.config.get('file_name'), prepared_data)
                 }
