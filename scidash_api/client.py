@@ -23,6 +23,12 @@ class ScidashClient(object):
             }
 
     def __init__(self, config=None, build_info=None, hostname=None):
+        """__init__
+
+        :param config:
+        :param build_info:
+        :param hostname:
+        """
         self.token = None
 
         self.config = settings.CONFIG
@@ -39,6 +45,9 @@ class ScidashClient(object):
             self.config.update(config)
 
     def get_headers(self):
+        """
+        Shortcut for gettings headers for uploading
+        """
         return {
                 'Authorization': 'JWT {}'.format(self.token)
                 }
@@ -65,6 +74,12 @@ class ScidashClient(object):
         return self
 
     def set_data(self, data=None):
+        """
+        Sets data for uploading
+
+        :param data:
+        :returns: self
+        """
 
         if isinstance(data, six.string_types):
             data = json.loads(data)
@@ -85,9 +100,7 @@ class ScidashClient(object):
         """
         Private main method for uploading
 
-        :prepared_data: Prepared serialized data for uploading
         :returns: urllib3 requests object
-
         """
 
         files = {
