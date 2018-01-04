@@ -2,22 +2,52 @@ from __future__ import unicode_literals, print_function
 import json
 
 import requests
+import six
+import cerberus
+
 from scidash_api import settings
+
+
+class ScidashClientException(Exception):
+    pass
 
 
 class ScidashClient(object):
 
     """Base client class for all actions with Scidash API"""
 
-    def __init__(self, config=None, build_info, hostname):
+    SCHEMA = {
+            'test_instance': {
+                'type': 'dict'
+                }
+            }
+
+    def __init__(self, config=None, build_info=None, hostname=None):
+        """__init__
+
+        :param config:
+        :param build_info:
+        :param hostname:
+        """
         self.token = None
 
         self.config = settings.CONFIG
+
+        self.data = {}
+
+        self.build_info = build_info
+        self.hostname = hostname
+
+        self.validator = cerberus.Validator(self.SCHEMA)
+        self.validator.allow_unknown = True
 
         if config is not None:
             self.config.update(config)
 
     def get_headers(self):
+        """
+        Shortcut for gettings headers for uploading
+        """
         return {
                 'Authorization': 'JWT {}'.format(self.token)
                 }
@@ -43,40 +73,38 @@ class ScidashClient(object):
 
         return self
 
-    def upload_json(self, data, build_info=None, hostname=None):
+    def set_data(self, data=None):
         """
-        Upload method for JSON string
+        Sets data for uploading
 
-        :param data: JSON string
+        :param data:
+        :returns: self
         """
-        return self._upload(data, build_info, hostname)
 
-    def upload_object(self, _object, build_info=None, hostname=None):
-        """
-        Upload method for serializable object
+        if isinstance(data, six.string_types):
+            data = json.loads(data)
 
-        :param _object: dict or list
-        """
-        serialized_object = json.dumps(_object)
+        if self.validator.validate(self.data):
+            self.data = data
+            self.data.get('test_instance').update({
+                "build_info": self.build_info,
+                "hostname": self.hostname
+                })
+        else:
+            raise ScidashClientException('WRONG DATA:'
+                    '{}'.format(self.validator.errors))
 
-        return self._upload(serialized_object, build_info, hostname)
+        return self
 
-    def _upload(self, prepared_data, build_info, hostname):
+    def upload(self):
         """
         Private main method for uploading
 
-        :prepared_data: Prepared serialized data for uploading
         :returns: urllib3 requests object
-
         """
 
-        prepared_data.get('test_instance').update({
-            'build_info': build_info,
-            'hostname': hostname
-        })
-
         files = {
-                'file': (self.config.get('file_name'), prepared_data)
+                'file': (self.config.get('file_name'), json.dumps(self.data))
                 }
 
         headers = self.get_headers()
