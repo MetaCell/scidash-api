@@ -3,12 +3,6 @@ import json
 
 from scidash_api import client
 
-# client_instance = client.ScidashClient()
-
-# data = None
-
-# request = client_instance.login('admin', 'kavabanga').upload_json(data)
-
 
 class ScidashApiTestCase(unittest.TestCase):
 
