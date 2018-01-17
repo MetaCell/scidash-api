@@ -1,5 +1,5 @@
 # scidash-api
-SciDash Python API to upload datat to SciDash from any Python environment
+SciDash Python API to upload data to SciDash from any Python environment
 
 How to use it
 
