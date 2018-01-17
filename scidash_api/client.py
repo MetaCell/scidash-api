@@ -4,6 +4,7 @@ import json
 import requests
 import six
 import cerberus
+import platform
 
 from scidash_api import settings
 
@@ -35,7 +36,7 @@ class ScidashClient(object):
 
         self.data = {}
 
-        self.build_info = build_info
+        self.build_info = build_info if build_info is not None else platform.platform()
         self.hostname = hostname
 
         self.validator = cerberus.Validator(self.SCHEMA)
