@@ -22,7 +22,7 @@ class ScidashApiTestCase(unittest.TestCase):
 
         cls.test_user = {
                 'username': 'admin_test',
-                'password': 'admin_test'
+                'password': 'admin_test_password'
                 }
 
     def test_login(self):

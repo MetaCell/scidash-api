@@ -1,5 +1,5 @@
 # scidash-api
-SciDash Python API to interact with the SciDash backend from any Python environment
+SciDash Python API to upload datat to SciDash from any Python environment
 
 How to use it
 
@@ -18,9 +18,6 @@ client_instance = client.ScidashClient({'base_url': 'http://api.server.com'}, bu
 # then you should login into Scidash Server
 client_instance.login({'username': 'username', 'password': 'password'})
 
-# after that set up your data (json or dict)
-client_instance.set_data(data=data)
-
 # and then call upload method
-client_instance.upload()
+client_instance.upload(data=data)
 ```
