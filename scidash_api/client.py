@@ -97,12 +97,15 @@ class ScidashClient(object):
 
         return self
 
-    def upload(self):
+    def upload(self, data=None):
         """
         Private main method for uploading
 
         :returns: urllib3 requests object
         """
+
+        if data is not None:
+            self.set_data(data)
 
         files = {
                 'file': (self.config.get('file_name'), json.dumps(self.data))
