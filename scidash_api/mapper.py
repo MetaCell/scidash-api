@@ -1,8 +1,109 @@
 import copy
+
+import cerberus
 import dpath.util
+
+from scidash_api.exceptions import ScidashClientException
 
 
 class ScidashClientMapper(object):
+    """ScidashClientMapper
+        util class for converting raw data from Sciunit to data acceptable in
+        Scidash
+    """
+
+    # Validation schema for raw data
+    SCHEMA = {
+            'model': {
+                'type': 'dict',
+                'schema': {
+                    '_class': {
+                        'type': 'dict',
+                        'schema': {
+                            'name': {
+                                'type': 'string'
+                                },
+                            'url': {
+                                'type': 'string'
+                                }
+                            }
+                        },
+                    'attrs': {
+                        'type': 'dict'
+                        },
+                    'capabilities': {
+                        'type': 'list',
+                        'schema': {
+                            'type': 'string'
+                            }
+                        },
+                    'name': {
+                        'type': 'string'
+                        },
+                    'run_params': {
+                        'type': 'dict'
+                        },
+                    'url': {
+                        'type': 'string'
+                        }
+                    }
+                },
+            'observation': {
+                'type': 'dict'
+                },
+            'prediction': {
+                'type': 'number'
+                },
+            'raw': {
+                'type': 'string'
+                },
+            'related_data': {
+                'type': 'dict'
+                },
+            'score': {
+                'type': 'number'
+                },
+            'score_type': {
+                    'type': 'string'
+                    },
+            'sort_key': {
+                    'type': 'number'
+                    },
+            'summary': {
+                    'type': 'string'
+                    },
+            'test': {
+                    'type': 'dict',
+                    'schema': {
+                        '_class': {
+                            'type': 'dict',
+                            'schema': {
+                                'name': {
+                                    'type': 'string'
+                                    },
+                                'url': {
+                                    'type': 'string'
+                                    }
+                                }
+                            },
+                        'description': {
+                            'type': 'string',
+                            'nullable': True
+                            },
+                        'name': {
+                            'type': 'string'
+                            },
+                        'observation': {
+                            'type': 'dict'
+                            },
+                        'verbose': {
+                            'type': 'number'
+                            }
+                        }
+                    }
+            }
+
+    # Expected output format
     OUTPUT_SCHEME = {
             'model_instance': {
                 'model_class': {
@@ -113,14 +214,36 @@ class ScidashClientMapper(object):
                 ),
             ]
 
+    def __init__(self):
+
+        self.validator = cerberus.Validator(self.SCHEMA)
+        self.validator.allow_unknown = True
+
     def convert(self, raw_data=None):
+        """convert
+        main method for converting
+
+        :param raw_data:dict with data from sciunit
+
+        :returns dict
+        """
 
         if raw_data is None:
             return self.OUTPUT_SCHEME
+
+        if not self.validator.validate(raw_data):
+            raise ScidashClientException('WRONG DATA:'
+                    '{}'.format(self.validator.errors))
 
         result = copy.deepcopy(self.OUTPUT_SCHEME)
 
         for item, address in self.KEYS_MAPPING:
             dpath.util.set(result, item, dpath.util.get(raw_data, address))
+
+        for capability in dpath.util.get(raw_data, 'model/capabilities'):
+            result.get('model_instance').get('model_class') \
+                                        .get('capabilities').append({
+                                            'class_name': capability
+                                        })
 
         return result
