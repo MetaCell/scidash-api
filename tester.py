@@ -1,13 +1,12 @@
 import unittest
 import json
+import copy
+
+import dpath.util
 
 from scidash_api import client
-
-# client_instance = client.ScidashClient()
-
-# data = None
-
-# request = client_instance.login('admin', 'kavabanga').upload_json(data)
+from scidash_api import mapper
+from scidash_api import exceptions
 
 
 class ScidashApiTestCase(unittest.TestCase):
@@ -17,7 +16,7 @@ class ScidashApiTestCase(unittest.TestCase):
         cls.client_instance = client.ScidashClient(build_info="test_info",
                 hostname="test_host")
 
-        with open('json_sample.json') as f:
+        with open('raw_json_sample.json') as f:
             cls.json = f.read()
 
         cls.test_user = {
@@ -49,3 +48,34 @@ class ScidashApiTestCase(unittest.TestCase):
 
         self.assertTrue(response_data.get('data').get('test_instance')
                 .get('hostname') == self.client_instance.hostname)
+
+
+class ScidashMapperTestCase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        cls.mapper_instance = mapper.ScidashClientMapper()
+
+        with open('raw_json_sample.json') as f:
+            cls.raw_json = f.read()
+
+        cls.raw_data = json.loads(cls.raw_json)
+
+    def test_is_mapper_works_correctly(self):
+
+        processed_data = self.mapper_instance.convert(self.raw_data)
+
+        for item, address in self.mapper_instance.KEYS_MAPPING:
+            self.assertEqual(
+                    dpath.util.get(self.raw_data, address),
+                    dpath.util.get(processed_data, item)
+                    )
+
+    def test_exception_raising_well(self):
+        broken_raw_data = copy.deepcopy(self.raw_data)
+
+        broken_raw_data['test'] = []
+
+        with self.assertRaises(exceptions.ScidashClientException) as c:
+            self.mapper_instance.convert(broken_raw_data)

@@ -1,0 +1,3 @@
+
+class ScidashClientException(Exception):
+    pass

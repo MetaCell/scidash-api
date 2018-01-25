@@ -3,25 +3,15 @@ import json
 
 import requests
 import six
-import cerberus
-import platform
+from platform import platform
 
 from scidash_api import settings
-
-
-class ScidashClientException(Exception):
-    pass
+from scidash_api.mapper import ScidashClientMapper
 
 
 class ScidashClient(object):
 
     """Base client class for all actions with Scidash API"""
-
-    SCHEMA = {
-            'test_instance': {
-                'type': 'dict'
-                }
-            }
 
     def __init__(self, config=None, build_info=None, hostname=None):
         """__init__
@@ -36,11 +26,10 @@ class ScidashClient(object):
 
         self.data = {}
 
-        self.build_info = build_info if build_info is not None else platform.platform()
+        self.build_info = build_info if build_info is not None else platform()
         self.hostname = hostname
 
-        self.validator = cerberus.Validator(self.SCHEMA)
-        self.validator.allow_unknown = True
+        self.mapper = ScidashClientMapper()
 
         if config is not None:
             self.config.update(config)
@@ -85,15 +74,12 @@ class ScidashClient(object):
         if isinstance(data, six.string_types):
             data = json.loads(data)
 
-        if self.validator.validate(self.data):
-            self.data = data
-            self.data.get('test_instance').update({
-                "build_info": self.build_info,
-                "hostname": self.hostname
-                })
-        else:
-            raise ScidashClientException('WRONG DATA:'
-                    '{}'.format(self.validator.errors))
+
+        self.data = self.mapper.convert(data)
+        self.data.get('test_instance').update({
+            "build_info": self.build_info,
+            "hostname": self.hostname
+            })
 
         return self
 
