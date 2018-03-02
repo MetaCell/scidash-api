@@ -13,8 +13,7 @@ class ScidashApiTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.client_instance = client.ScidashClient(build_info="test_info",
-                hostname="test_host")
+        cls.client_instance = client.ScidashClient(hostname="test_host")
 
         with open('raw_json_sample.json') as f:
             cls.json = f.read()
