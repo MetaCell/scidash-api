@@ -74,7 +74,6 @@ class ScidashClient(object):
         if isinstance(data, six.string_types):
             data = json.loads(data)
 
-
         self.data = self.mapper.convert(data)
         self.data.get('test_instance').update({
             "build_info": self.build_info,
@@ -83,9 +82,9 @@ class ScidashClient(object):
 
         return self
 
-    def upload(self, data=None):
+    def upload_score(self, data=None):
         """
-        Private main method for uploading
+        Main method for uploading
 
         :returns: urllib3 requests object
         """
@@ -108,3 +107,25 @@ class ScidashClient(object):
                 files=files)
 
         return r
+
+    def upload_suite(self, suite, score_list):
+
+        hash_list = []
+
+        for test in suite.get('tests'):
+            hash_list.append(test.get('hash'))
+
+        responses = []
+
+        for score in score_list:
+            if score.get('test').get('hash') in hash_list:
+                if 'test_suites' not in score.get('test'):
+                    score.get('test').update({
+                        'test_suites': []
+                        })
+
+                score.get('test').get('test_suites').append(suite)
+
+            responses.append(self.upload_score(data=score))
+
+        return responses
