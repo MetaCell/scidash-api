@@ -19,8 +19,8 @@ class ScidashApiTestCase(unittest.TestCase):
             cls.json = f.read()
 
         cls.test_user = {
-                'username': 'admin_test',
-                'password': 'admin_test_password'
+                'username': 'admin',
+                'password': 'kavabanga'
                 }
 
     def test_login(self):
@@ -37,7 +37,7 @@ class ScidashApiTestCase(unittest.TestCase):
 
         self.assertIsInstance(self.client_instance.data, dict)
 
-        request = self.client_instance.upload()
+        request = self.client_instance.upload_score()
 
         response_data = request.json()
 

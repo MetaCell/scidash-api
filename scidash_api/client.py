@@ -70,9 +70,11 @@ class ScidashClient(object):
         :param data:
         :returns: self
         """
-
-        if isinstance(data, six.string_types):
-            data = json.loads(data)
+        try:
+            data = data.json(add_props=True, string=False)
+        except AttributeError:
+            if isinstance(data, six.string_types):
+                data = json.loads(data)
 
         self.data = self.mapper.convert(data)
         self.data.get('test_instance').update({

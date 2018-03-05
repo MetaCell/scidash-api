@@ -30,6 +30,7 @@
                           "std": 3,
                           "url": "http://somewhere.thathasdata.com"},
           "unpicklable": [],
+          "test_suites":[],
           "verbose": 1},
  "unpicklable": []
 }
