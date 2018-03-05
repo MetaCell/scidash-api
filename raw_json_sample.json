@@ -1,4 +1,5 @@
 {"_class": {"name": "ZScore", "url": ""},
+ "hash": "94bf784e39e88aa2f2e01c1d1d9bdaeeff5cbb5f0c0cae5f05530c79",
  "model": {"_class": {"name": "ReducedModel", "url": ""},
            "attrs": {},
            "capabilities": ["Runnable",
@@ -7,6 +8,7 @@
                             "ProducesActionPotentials",
                             "ProducesSpikes",
                             "ProducesMembranePotential"],
+           "hash": "c3dd401eadcc4afde47daeeb350b99c0b2d3ca32a432900dd90842ed",
            "name": "Izhikevich",
            "run_params": {},
            "url": "https://github.com/scidash/neuronunit/blob/master/neuronunit/models/NeuroML2/LEMS_2007One.xml"},
@@ -22,10 +24,13 @@
  "summary": "=== Model Izhikevich achieved score Z = -0.33 on test 'MyTest'. ===",
  "test": {"_class": {"name": "MyTest", "url": ""},
           "description": null,
+          "hash": "6ae233c642ef31eebd4da7dbc2e77a94a3431830263c1d771ac10c11",
           "name": "MyTest",
           "observation": {"mean": 8,
                           "std": 3,
                           "url": "http://somewhere.thathasdata.com"},
           "unpicklable": [],
+          "test_suites":[],
           "verbose": 1},
- "unpicklable": []}
+ "unpicklable": []
+}

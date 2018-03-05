@@ -1,0 +1,65 @@
+{
+   "model_instance":{
+      "attributes":{
+         "izhikevich2007Cell":{
+            "a":"0.04 per_ms"
+         }
+      },
+      "model_class":{
+         "capabilities":[
+            {
+               "class_name":"Runnable"
+            },
+            {
+               "class_name":"ReceivesCurrent"
+            },
+            {
+               "class_name":"ReceivesSquareCurrent"
+            },
+            {
+               "class_name":"ProducesActionPotentials"
+            },
+            {
+               "class_name":"ProducesSpikes"
+            },
+            {
+               "class_name":"ProducesMembranePotential"
+            }
+         ],
+         "class_name":"ReducedModel",
+         "url":""
+      },
+      "name":"Izhikevich_new",
+      "run_params":{
+
+      },
+      "url":"https://github.com/scidash/neuronunit/blob/master/neuronunit/models/NeuroML2/LEMS_2007One.xml"
+   },
+   "prediction":8,
+   "raw":"0.2632",
+   "related_data":{
+
+   },
+   "score":0.2631578947368421,
+   "score_type":"ZScore",
+   "sort_key":0.7924288824046,
+   "summary":"=== Model Izhikevich_new achieved score Z = 0.26 on test 'Second Test'. ===",
+   "test_instance":{
+      "description":null,
+      "observation":{
+         "mean":7,
+         "std":3.8,
+         "url":"http://somewhereelse.thathasdata.com"
+      },
+      "test_class":{
+         "class_name":"Second Test",
+         "url":""
+      },
+      "test_suites":[
+         {
+            "name":"My Suite"
+         }
+      ],
+      "verbose":1
+   }
+}
