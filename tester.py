@@ -15,7 +15,7 @@ class ScidashApiTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.client_instance = client.ScidashClient(hostname="test_host")
 
-        with open('raw_json_sample.json') as f:
+        with open('test_data/raw_json_sample.json') as f:
             cls.json = f.read()
 
         cls.test_user = {
@@ -56,7 +56,7 @@ class ScidashMapperTestCase(unittest.TestCase):
 
         cls.mapper_instance = mapper.ScidashClientMapper()
 
-        with open('raw_json_sample.json') as f:
+        with open('test_data/raw_json_sample.json') as f:
             cls.raw_json = f.read()
 
         cls.raw_data = json.loads(cls.raw_json)

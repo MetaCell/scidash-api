@@ -111,6 +111,27 @@ class ScidashClient(object):
         return r
 
     def upload_suite(self, suite, score_matrix):
+        """upload_suite
+
+        uploading score matrix with suite information
+
+        :param suite:
+        :param score_matrix:
+
+        :returns: urllib3 requests object list
+        """
+
+        try:
+            suite = suite.json(add_props=True, string=False)
+        except AttributeError:
+            if isinstance(data, six.string_types):
+                suite = json.loads(suite)
+
+        try:
+            score_matrix = score_matrix.json(add_props=True, string=False)
+        except AttributeError:
+            if isinstance(data, six.string_types):
+                score_matrix = json.loads(score_matrix)
 
         hash_list = []
 
