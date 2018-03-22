@@ -110,7 +110,7 @@ class ScidashClient(object):
 
         return r
 
-    def upload_suite(self, suite, score_list):
+    def upload_suite(self, suite, score_matrix):
 
         hash_list = []
 
@@ -119,7 +119,10 @@ class ScidashClient(object):
 
         responses = []
 
-        for score in score_list:
+        flat_score_list = [score for score_list in score_matrix for score in
+                score_list]
+
+        for score in flat_score_list:
             if score.get('test').get('hash') in hash_list:
                 if 'test_suites' not in score.get('test'):
                     score.get('test').update({
