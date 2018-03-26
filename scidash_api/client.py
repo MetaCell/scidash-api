@@ -71,7 +71,7 @@ class ScidashClient(object):
         :returns: self
         """
         try:
-            data = data.json(add_props=True, string=False)
+            data = json.loads(data.json(add_props=True, string=False))
         except AttributeError:
             if isinstance(data, six.string_types):
                 data = json.loads(data)
@@ -122,15 +122,15 @@ class ScidashClient(object):
         """
 
         try:
-            suite = json.load(suite.json(add_props=True, string=False))
+            suite = json.loads(suite.json(add_props=True, string=False))
         except AttributeError:
-            if isinstance(data, six.string_types):
+            if isinstance(suite, six.string_types):
                 suite = json.loads(suite)
 
         try:
             score_matrix = score_matrix.json(add_props=True, string=False)
         except AttributeError:
-            if isinstance(data, six.string_types):
+            if isinstance(score_matrix, six.string_types):
                 score_matrix = json.loads(score_matrix)
 
         hash_list = []
