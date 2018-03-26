@@ -128,7 +128,8 @@ class ScidashClient(object):
                 suite = json.loads(suite)
 
         try:
-            score_matrix = score_matrix.json(add_props=True, string=False)
+            score_matrix = json.loads(score_matrix.json(add_props=True,
+                string=False)).get('scores')
         except AttributeError:
             if isinstance(score_matrix, six.string_types):
                 score_matrix = json.loads(score_matrix)
