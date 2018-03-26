@@ -246,10 +246,13 @@ class ScidashClientMapper(object):
                                             'class_name': capability
                                         })
 
-        for test_suite in dpath.util.get(raw_data, 'test/test_suites'):
-            result.get('test_instance').get('test_suites').append({
-                                            'name': test_suite.get('name'),
-                                            'hash': test_suite.get('hash')
-                                        })
+        try:
+            for test_suite in dpath.util.get(raw_data, 'test/test_suites'):
+                result.get('test_instance').get('test_suites').append({
+                                                'name': test_suite.get('name'),
+                                                'hash': test_suite.get('hash')
+                                            })
+        except KeyError:
+            pass
 
         return result

@@ -71,7 +71,7 @@ class ScidashClient(object):
         :returns: self
         """
         try:
-            data = data.json(add_props=True, string=False)
+            data = json.loads(data.json(add_props=True, string=False))
         except AttributeError:
             if isinstance(data, six.string_types):
                 data = json.loads(data)
