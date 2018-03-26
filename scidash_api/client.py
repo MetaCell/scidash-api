@@ -122,7 +122,7 @@ class ScidashClient(object):
         """
 
         try:
-            suite = suite.json(add_props=True, string=False)
+            suite = json.load(suite.json(add_props=True, string=False))
         except AttributeError:
             if isinstance(data, six.string_types):
                 suite = json.loads(suite)
