@@ -19,8 +19,8 @@ class ScidashApiTestCase(unittest.TestCase):
             cls.json = f.read()
 
         cls.test_user = {
-                'username': 'admin',
-                'password': 'kavabanga'
+                'username': 'admin_test',
+                'password': 'admin_test_password'
                 }
 
     def test_login(self):
