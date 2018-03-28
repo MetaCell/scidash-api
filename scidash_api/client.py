@@ -3,24 +3,15 @@ import json
 
 import requests
 import six
-import cerberus
+from platform import platform
 
 from scidash_api import settings
-
-
-class ScidashClientException(Exception):
-    pass
+from scidash_api.mapper import ScidashClientMapper
 
 
 class ScidashClient(object):
 
     """Base client class for all actions with Scidash API"""
-
-    SCHEMA = {
-            'test_instance': {
-                'type': 'dict'
-                }
-            }
 
     def __init__(self, config=None, build_info=None, hostname=None):
         """__init__
@@ -35,11 +26,10 @@ class ScidashClient(object):
 
         self.data = {}
 
-        self.build_info = build_info
+        self.build_info = build_info if build_info is not None else platform()
         self.hostname = hostname
 
-        self.validator = cerberus.Validator(self.SCHEMA)
-        self.validator.allow_unknown = True
+        self.mapper = ScidashClientMapper()
 
         if config is not None:
             self.config.update(config)
@@ -80,28 +70,29 @@ class ScidashClient(object):
         :param data:
         :returns: self
         """
+        try:
+            data = json.loads(data.json(add_props=True, string=True))
+        except AttributeError:
+            if isinstance(data, six.string_types):
+                data = json.loads(data)
 
-        if isinstance(data, six.string_types):
-            data = json.loads(data)
-
-        if self.validator.validate(self.data):
-            self.data = data
-            self.data.get('test_instance').update({
-                "build_info": self.build_info,
-                "hostname": self.hostname
-                })
-        else:
-            raise ScidashClientException('WRONG DATA:'
-                    '{}'.format(self.validator.errors))
+        self.data = self.mapper.convert(data)
+        self.data.get('test_instance').update({
+            "build_info": self.build_info,
+            "hostname": self.hostname
+            })
 
         return self
 
-    def upload(self):
+    def upload_score(self, data=None):
         """
-        Private main method for uploading
+        Main method for uploading
 
         :returns: urllib3 requests object
         """
+
+        if data is not None:
+            self.set_data(data)
 
         files = {
                 'file': (self.config.get('file_name'), json.dumps(self.data))
@@ -118,3 +109,50 @@ class ScidashClient(object):
                 files=files)
 
         return r
+
+    def upload_suite(self, suite, score_matrix):
+        """upload_suite
+
+        uploading score matrix with suite information
+
+        :param suite:
+        :param score_matrix:
+
+        :returns: urllib3 requests object list
+        """
+
+        try:
+            suite = json.loads(suite.json(add_props=True, string=True))
+        except AttributeError:
+            if isinstance(suite, six.string_types):
+                suite = json.loads(suite)
+
+        try:
+            score_matrix = json.loads(score_matrix.json(add_props=True,
+                string=True)).get('scores')
+        except AttributeError:
+            if isinstance(score_matrix, six.string_types):
+                score_matrix = json.loads(score_matrix)
+
+        hash_list = []
+
+        for test in suite.get('tests'):
+            hash_list.append(test.get('hash'))
+
+        responses = []
+
+        flat_score_list = [score for score_list in score_matrix for score in
+                score_list]
+
+        for score in flat_score_list:
+            if score.get('test').get('hash') in hash_list:
+                if 'test_suites' not in score.get('test'):
+                    score.get('test').update({
+                        'test_suites': []
+                        })
+
+                score.get('test').get('test_suites').append(suite)
+
+            responses.append(self.upload_score(data=score))
+
+        return responses
