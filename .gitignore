@@ -131,6 +131,12 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# Visual Studio code 
+.vscode/
+
+# intelliJ 
+.idea/
+
 ### Vim ###
 # swap
 [._]*.s[a-v][a-z]
