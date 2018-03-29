@@ -4,16 +4,18 @@ import copy
 
 import dpath.util
 
-from scidash_api import client
+from scidash_api.client import ScidashClient
 from scidash_api import mapper
-from scidash_api import exceptions
+from scidash_api import exceptions as e
 
 
 class ScidashApiTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.client_instance = client.ScidashClient(hostname='test_host')
+        cls.client_instance = copy.deepcopy(ScidashClient(config={
+            'base_url': 'http://localhost:8000'
+        }, hostname='test_host'))
 
         with open('test_data/raw_json_sample.json') as f:
             cls.json = f.read()
@@ -23,9 +25,16 @@ class ScidashApiTestCase(unittest.TestCase):
                 'password': 'admin_test_password'
                 }
 
-    def test_login(self):
-        self.client_instance.login(**self.test_user)
+        cls.broken_user = {
+            'username': 'lol',
+            'password': 'rofl'
+        }
 
+    def test_login(self):
+        with self.assertRaises(e.ScidashClientException) as c:
+            self.client_instance.login(**self.broken_user)
+
+        self.client_instance.login(**self.test_user)
         self.assertFalse(self.client_instance.token is None)
 
     def test_upload(self):
@@ -47,6 +56,12 @@ class ScidashApiTestCase(unittest.TestCase):
 
         self.assertTrue(response_data.get('data').get('test_instance')
                 .get('hostname') == self.client_instance.hostname)
+
+    def test_config_checking(self):
+        with self.assertRaises(e.ScidashClientWrongConfigException) as c:
+            broken_instance = ScidashClient(config={
+                'base_url': 'http://broken_url/'
+                })
 
 
 class ScidashMapperTestCase(unittest.TestCase):
@@ -76,5 +91,5 @@ class ScidashMapperTestCase(unittest.TestCase):
 
         broken_raw_data['test'] = []
 
-        with self.assertRaises(exceptions.ScidashClientException) as c:
+        with self.assertRaises(e.ScidashClientException) as c:
             self.mapper_instance.convert(broken_raw_data)
