@@ -7,6 +7,7 @@ from platform import platform
 
 from scidash_api import settings
 from scidash_api.mapper import ScidashClientMapper
+from scidash_api import exceptions
 
 
 class ScidashClient(object):
@@ -34,6 +35,18 @@ class ScidashClient(object):
         if config is not None:
             self.config.update(config)
 
+        self.test_config()
+
+    def test_config(self):
+        """
+        Check, is config is fine
+        :returns: void
+        :raises: ScidashClientWrongConfigException
+        """
+        if self.config.get('base_url')[-1] is '/':
+            raise exceptions.ScidashClientWrongConfigException('Remove last '
+                    'slash from base_url')
+
     def get_headers(self):
         """
         Shortcut for gettings headers for uploading
@@ -59,7 +72,14 @@ class ScidashClient(object):
 
         r = requests.post('{}{}'.format(base_url, auth_url), data=credentials)
 
-        self.token = r.json().get('token')
+        try:
+            self.token = r.json().get('token')
+        except Exception as e:
+            raise exceptions.ScidashClientException('Authentication Failed: {}'.format(e))
+
+        if self.token is None:
+            raise exceptions.ScidashClientException('Authentication Failed: '
+                    '{}'.format(r.json()))
 
         return self
 
