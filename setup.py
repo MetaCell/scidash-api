@@ -13,7 +13,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     license='MIT',
-    description='Scidash Client library for uploading test data',
+    description='Scidash Client library for uploading data',
     long_description=README,
     url='https://github.com/MetaCell/scidash-api',
     author='MetaCell',
