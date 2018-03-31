@@ -7,6 +7,9 @@ import dpath.util
 from scidash_api.client import ScidashClient
 from scidash_api import mapper
 from scidash_api import exceptions as e
+from scidash_api import validator
+
+from test_data import nan_test_object
 
 
 class ScidashApiTestCase(unittest.TestCase):
@@ -64,6 +67,17 @@ class ScidashApiTestCase(unittest.TestCase):
                 })
 
 
+class ScidashValidatorTestCase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.validator = validator.ScidashClientDataValidator()
+        cls.nan_data = nan_test_object.NAN_OBJECT
+
+    def test_nan_validation(self):
+        self.assertFalse(self.validator.validate_score(self.nan_data))
+
+
 class ScidashMapperTestCase(unittest.TestCase):
 
     @classmethod
@@ -90,6 +104,11 @@ class ScidashMapperTestCase(unittest.TestCase):
         broken_raw_data = copy.deepcopy(self.raw_data)
 
         broken_raw_data['test'] = []
+
+        with self.assertRaises(e.ScidashClientException) as c:
+            self.mapper_instance.convert(broken_raw_data)
+
+        broken_raw_data = nan_test_object.NAN_OBJECT
 
         with self.assertRaises(e.ScidashClientException) as c:
             self.mapper_instance.convert(broken_raw_data)

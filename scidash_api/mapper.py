@@ -4,6 +4,7 @@ import cerberus
 import dpath.util
 
 from scidash_api.exceptions import ScidashClientException
+from scidash_api.validator import ScidashClientDataValidator
 
 
 class ScidashClientMapper(object):
@@ -11,97 +12,6 @@ class ScidashClientMapper(object):
         util class for converting raw data from Sciunit to data acceptable in
         Scidash
     """
-
-    # Validation schema for raw data
-    SCHEMA = {
-            'model': {
-                'type': 'dict',
-                'schema': {
-                    '_class': {
-                        'type': 'dict',
-                        'schema': {
-                            'name': {
-                                'type': 'string'
-                                },
-                            'url': {
-                                'type': 'string'
-                                }
-                            }
-                        },
-                    'attrs': {
-                        'type': 'dict'
-                        },
-                    'capabilities': {
-                        'type': 'list',
-                        'schema': {
-                            'type': 'string'
-                            }
-                        },
-                    'name': {
-                        'type': 'string'
-                        },
-                    'run_params': {
-                        'type': 'dict'
-                        },
-                    'url': {
-                        'type': 'string'
-                        }
-                    }
-                },
-            'observation': {
-                'type': 'dict'
-                },
-            'prediction': {
-                'type': 'number'
-                },
-            'raw': {
-                'type': 'string'
-                },
-            'related_data': {
-                'type': 'dict'
-                },
-            'score': {
-                'type': 'number'
-                },
-            'score_type': {
-                    'type': 'string'
-                    },
-            'sort_key': {
-                    'type': 'number'
-                    },
-            'summary': {
-                    'type': 'string'
-                    },
-            'test': {
-                    'type': 'dict',
-                    'schema': {
-                        '_class': {
-                            'type': 'dict',
-                            'schema': {
-                                'name': {
-                                    'type': 'string'
-                                    },
-                                'url': {
-                                    'type': 'string'
-                                    }
-                                }
-                            },
-                        'description': {
-                            'type': 'string',
-                            'nullable': True
-                            },
-                        'name': {
-                            'type': 'string'
-                            },
-                        'observation': {
-                            'type': 'dict'
-                            },
-                        'verbose': {
-                            'type': 'number'
-                            }
-                        }
-                    }
-            }
 
     # Expected output format
     OUTPUT_SCHEME = {
@@ -215,9 +125,8 @@ class ScidashClientMapper(object):
             ]
 
     def __init__(self):
+        self.validator = ScidashClientDataValidator()
 
-        self.validator = cerberus.Validator(self.SCHEMA)
-        self.validator.allow_unknown = True
 
     def convert(self, raw_data=None):
         """convert
@@ -231,9 +140,9 @@ class ScidashClientMapper(object):
         if raw_data is None:
             return self.OUTPUT_SCHEME
 
-        if not self.validator.validate(raw_data):
+        if not self.validator.validate_score(raw_data):
             raise ScidashClientException('WRONG DATA:'
-                    '{}'.format(self.validator.errors))
+                    '{}'.format(self.validator.get_errors()))
 
         result = copy.deepcopy(self.OUTPUT_SCHEME)
 
