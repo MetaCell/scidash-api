@@ -43,7 +43,8 @@ class ScidashClientDataValidator():
                             }
                         },
                     'attrs': {
-                        'type': 'dict'
+                        'type': 'dict',
+                        'required': False
                         },
                     'capabilities': {
                         'type': 'list',
@@ -55,7 +56,8 @@ class ScidashClientDataValidator():
                         'type': 'string'
                         },
                     'run_params': {
-                        'type': 'dict'
+                        'type': 'dict',
+                        'required': False
                         },
                     'url': {
                         'type': 'string'

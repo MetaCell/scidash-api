@@ -1,3 +1,4 @@
+import logging
 import copy
 
 import cerberus
@@ -5,6 +6,9 @@ import dpath.util
 
 from scidash_api.exceptions import ScidashClientException
 from scidash_api.validator import ScidashClientDataValidator
+
+
+logger = logging.getLogger(__name__)
 
 
 class ScidashClientMapper(object):
@@ -59,16 +63,8 @@ class ScidashClientMapper(object):
                 'model/_class/url'
                 ),
             (
-                'model_instance/attributes',
-                'model/attrs'
-                ),
-            (
                 'model_instance/name',
                 'model/name'
-                ),
-            (
-                'model_instance/run_params',
-                'model/run_params'
                 ),
             (
                 'model_instance/url',
@@ -124,6 +120,17 @@ class ScidashClientMapper(object):
                 ),
             ]
 
+    OPTIONAL_KEYS_MAPPING = [
+            (
+                'model_instance/run_params',
+                'model/run_params'
+                ),
+            (
+                'model_instance/attrs',
+                'model/attrs'
+                )
+            ]
+
     def __init__(self):
         self.validator = ScidashClientDataValidator()
 
@@ -148,6 +155,12 @@ class ScidashClientMapper(object):
 
         for item, address in self.KEYS_MAPPING:
             dpath.util.set(result, item, dpath.util.get(raw_data, address))
+
+        for item, address in self.OPTIONAL_KEYS_MAPPING:
+            try:
+                dpath.util.set(result, item, dpath.util.get(raw_data, address))
+            except KeyError:
+                logger.info("Optional value {} is not found".format(item))
 
         for capability in dpath.util.get(raw_data, 'model/capabilities'):
             result.get('model_instance').get('model_class') \
