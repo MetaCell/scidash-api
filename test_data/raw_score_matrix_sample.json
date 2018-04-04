@@ -13,8 +13,7 @@
              "url": "https://github.com/scidash/neuronunit/blob/master/neuronunit/models/NeuroML2/LEMS_2007One.xml"},
             {"_class": {"name": "ReducedModel", "url": ""},
              "attrs": {"izhikevich2007Cell": {"a": "0.04 per_ms"}},
-             "backend": "jNeuroML",
-             "capabilities": ["Runnable",
+             "backend": "jNeuroML", "capabilities": ["Runnable",
                               "ReceivesCurrent",
                               "ReceivesSquareCurrent",
                               "ProducesActionPotentials",
@@ -42,7 +41,9 @@
               "observation": {"mean": 8,
                               "std": 3,
                               "url": "http://somewhere.thathasdata.com"},
-              "prediction": 7,
+                              "prediction": {
+                                "dict": "for testing dict handling too"
+                              },
               "raw": "-0.3333",
               "related_data": {},
               "score": -0.3333333333333333,

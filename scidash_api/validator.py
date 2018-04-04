@@ -1,4 +1,5 @@
 import math
+import numbers
 
 from scidash_api.exceptions import ScidashClientException
 from cerberus import Validator
@@ -13,6 +14,10 @@ class ValidatorExtended(Validator):
         The rule's arguments are validated against this schema:
         {'type': 'boolean'}
         """
+
+        if not isinstance(value, numbers.Number):
+            return
+
         if not isnan and math.isnan(value):
             self._error(field, "Value can't be NaN")
 
@@ -61,7 +66,7 @@ class ScidashClientDataValidator():
                 'type': 'dict'
                 },
             'prediction': {
-                'type': 'number',
+                'type': ['number', 'dict'],
                 'isnan': False
                 },
             'raw': {
