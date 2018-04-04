@@ -25,6 +25,7 @@ class ScidashClientMapper(object):
                     'url': '',
                     'capabilities': []
                     },
+                'backend': None,
                 'attributes': {},
                 'name': None,
                 'run_params': {},
@@ -65,6 +66,10 @@ class ScidashClientMapper(object):
             (
                 'model_instance/name',
                 'model/name'
+                ),
+            (
+                'model_instance/backend',
+                'model/backend'
                 ),
             (
                 'model_instance/url',
