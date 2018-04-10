@@ -26,6 +26,9 @@ class ScidashApiTestCase(unittest.TestCase):
         with open('test_data/raw_json_sample_prediction_dict.json') as f:
             cls.json_dict = f.read()
 
+        with open('test_data/raw_json_sample_malformed.json') as f:
+            cls.raw_json_dict_malformed = f.read()
+
         cls.test_user = {
                 'username': 'admin_test',
                 'password': 'admin_test_password'
@@ -69,6 +72,11 @@ class ScidashApiTestCase(unittest.TestCase):
         self.assertTrue(response_data.get('data').get('test_instance')
                 .get('hostname') == self.client_instance.hostname)
 
+    def test_do_not_upload_malformed_data(self):
+        r = self.client_instance.upload_score(self.raw_json_dict_malformed)
+        self.assertFalse(r)
+
+
     def test_config_checking(self):
         with self.assertRaises(e.ScidashClientWrongConfigException) as c:
             broken_instance = ScidashClient(config={
@@ -100,8 +108,12 @@ class ScidashMapperTestCase(unittest.TestCase):
         with open('test_data/raw_json_sample_prediction_dict.json') as f:
             cls.raw_json_dict = f.read()
 
+        with open('test_data/raw_json_sample_malformed.json') as f:
+            cls.raw_json_dict_malformed = f.read()
+
         cls.raw_data_numeric = json.loads(cls.raw_json_numeric)
         cls.raw_data_dict = json.loads(cls.raw_json_dict)
+        cls.raw_json_dict_malformed = json.loads(cls.raw_json_dict_malformed)
 
     def test_is_mapper_works_correctly_numeric(self):
 
@@ -124,14 +136,17 @@ class ScidashMapperTestCase(unittest.TestCase):
                     )
 
     def test_exception_raising_well(self):
-        broken_raw_data = copy.deepcopy(self.raw_data_numeric)
-
-        broken_raw_data['test'] = []
-
         with self.assertRaises(e.ScidashClientException) as c:
-            self.mapper_instance.convert(broken_raw_data)
+            self.mapper_instance.convert(self.raw_json_dict_malformed,
+                    strict=True)
 
         broken_raw_data = nan_test_object.NAN_OBJECT
 
         with self.assertRaises(e.ScidashClientException) as c:
-            self.mapper_instance.convert(broken_raw_data)
+            self.mapper_instance.convert(broken_raw_data, strict=True)
+
+    def test_exception_was_not_raised(self):
+        result = self.mapper_instance.convert(self.raw_json_dict_malformed,
+                strict=False)
+
+        self.assertTrue(result is None)
