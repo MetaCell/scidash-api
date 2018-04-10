@@ -146,7 +146,7 @@ class ScidashClient(object):
 
         if isinstance(score_matrix, six.string_types):
             score_matrix = json.loads(score_matrix)
-        elif not isinstance(score_matrix, dict):
+        elif not isinstance(score_matrix, list):
             score_matrix = json.loads(score_matrix.json(add_props=True,
                 string=True))
 
