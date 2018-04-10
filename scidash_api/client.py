@@ -90,11 +90,10 @@ class ScidashClient(object):
         :param data:
         :returns: self
         """
-        try:
+        if isinstance(data, six.string_types):
+            data = json.loads(data)
+        elif not isinstance(data, dict):
             data = json.loads(data.json(add_props=True, string=True))
-        except AttributeError:
-            if isinstance(data, six.string_types):
-                data = json.loads(data)
 
         self.data = self.mapper.convert(data)
         self.data.get('test_instance').update({
@@ -140,19 +139,16 @@ class ScidashClient(object):
 
         :returns: urllib3 requests object list
         """
-
-        try:
+        if isinstance(suite, six.string_types):
+            suite = json.loads(suite)
+        elif not isinstance(suite, dict):
             suite = json.loads(suite.json(add_props=True, string=True))
-        except AttributeError:
-            if isinstance(suite, six.string_types):
-                suite = json.loads(suite)
 
-        try:
+        if isinstance(score_matrix, six.string_types):
+            score_matrix = json.loads(score_matrix)
+        elif not isinstance(score_matrix, dict):
             score_matrix = json.loads(score_matrix.json(add_props=True,
-                string=True)).get('scores')
-        except AttributeError:
-            if isinstance(score_matrix, six.string_types):
-                score_matrix = json.loads(score_matrix)
+                string=True))
 
         hash_list = []
 

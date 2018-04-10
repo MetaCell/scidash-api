@@ -1,9 +1,14 @@
+import logging
 import copy
 
 import cerberus
 import dpath.util
 
 from scidash_api.exceptions import ScidashClientException
+from scidash_api.validator import ScidashClientDataValidator
+
+
+logger = logging.getLogger(__name__)
 
 
 class ScidashClientMapper(object):
@@ -11,97 +16,6 @@ class ScidashClientMapper(object):
         util class for converting raw data from Sciunit to data acceptable in
         Scidash
     """
-
-    # Validation schema for raw data
-    SCHEMA = {
-            'model': {
-                'type': 'dict',
-                'schema': {
-                    '_class': {
-                        'type': 'dict',
-                        'schema': {
-                            'name': {
-                                'type': 'string'
-                                },
-                            'url': {
-                                'type': 'string'
-                                }
-                            }
-                        },
-                    'attrs': {
-                        'type': 'dict'
-                        },
-                    'capabilities': {
-                        'type': 'list',
-                        'schema': {
-                            'type': 'string'
-                            }
-                        },
-                    'name': {
-                        'type': 'string'
-                        },
-                    'run_params': {
-                        'type': 'dict'
-                        },
-                    'url': {
-                        'type': 'string'
-                        }
-                    }
-                },
-            'observation': {
-                'type': 'dict'
-                },
-            'prediction': {
-                'type': 'number'
-                },
-            'raw': {
-                'type': 'string'
-                },
-            'related_data': {
-                'type': 'dict'
-                },
-            'score': {
-                'type': 'number'
-                },
-            'score_type': {
-                    'type': 'string'
-                    },
-            'sort_key': {
-                    'type': 'number'
-                    },
-            'summary': {
-                    'type': 'string'
-                    },
-            'test': {
-                    'type': 'dict',
-                    'schema': {
-                        '_class': {
-                            'type': 'dict',
-                            'schema': {
-                                'name': {
-                                    'type': 'string'
-                                    },
-                                'url': {
-                                    'type': 'string'
-                                    }
-                                }
-                            },
-                        'description': {
-                            'type': 'string',
-                            'nullable': True
-                            },
-                        'name': {
-                            'type': 'string'
-                            },
-                        'observation': {
-                            'type': 'dict'
-                            },
-                        'verbose': {
-                            'type': 'number'
-                            }
-                        }
-                    }
-            }
 
     # Expected output format
     OUTPUT_SCHEME = {
@@ -111,6 +25,7 @@ class ScidashClientMapper(object):
                     'url': '',
                     'capabilities': []
                     },
+                'backend': None,
                 'attributes': {},
                 'name': None,
                 'run_params': {},
@@ -149,16 +64,12 @@ class ScidashClientMapper(object):
                 'model/_class/url'
                 ),
             (
-                'model_instance/attributes',
-                'model/attrs'
-                ),
-            (
                 'model_instance/name',
                 'model/name'
                 ),
             (
-                'model_instance/run_params',
-                'model/run_params'
+                'model_instance/backend',
+                'model/backend'
                 ),
             (
                 'model_instance/url',
@@ -214,10 +125,20 @@ class ScidashClientMapper(object):
                 ),
             ]
 
-    def __init__(self):
+    OPTIONAL_KEYS_MAPPING = [
+            (
+                'model_instance/run_params',
+                'model/run_params'
+                ),
+            (
+                'model_instance/attrs',
+                'model/attrs'
+                )
+            ]
 
-        self.validator = cerberus.Validator(self.SCHEMA)
-        self.validator.allow_unknown = True
+    def __init__(self):
+        self.validator = ScidashClientDataValidator()
+
 
     def convert(self, raw_data=None):
         """convert
@@ -231,14 +152,20 @@ class ScidashClientMapper(object):
         if raw_data is None:
             return self.OUTPUT_SCHEME
 
-        if not self.validator.validate(raw_data):
+        if not self.validator.validate_score(raw_data):
             raise ScidashClientException('WRONG DATA:'
-                    '{}'.format(self.validator.errors))
+                    '{}'.format(self.validator.get_errors()))
 
         result = copy.deepcopy(self.OUTPUT_SCHEME)
 
         for item, address in self.KEYS_MAPPING:
             dpath.util.set(result, item, dpath.util.get(raw_data, address))
+
+        for item, address in self.OPTIONAL_KEYS_MAPPING:
+            try:
+                dpath.util.set(result, item, dpath.util.get(raw_data, address))
+            except KeyError:
+                logger.info("Optional value {} is not found".format(item))
 
         for capability in dpath.util.get(raw_data, 'model/capabilities'):
             result.get('model_instance').get('model_class') \

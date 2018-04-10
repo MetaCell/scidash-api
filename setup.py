@@ -9,11 +9,11 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='scidash-api',
-    version='0.1.0',
+    version='0.3.0',
     packages=find_packages(),
     include_package_data=True,
     license='MIT',
-    description='Scidash Client library for uploading test data',
+    description='Scidash Client library for uploading data',
     long_description=README,
     url='https://github.com/MetaCell/scidash-api',
     author='MetaCell',
