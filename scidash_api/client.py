@@ -8,6 +8,7 @@ from platform import platform
 from scidash_api import settings
 from scidash_api.mapper import ScidashClientMapper
 from scidash_api import exceptions
+from scidash_api import helper
 
 
 class ScidashClient(object):
@@ -105,7 +106,7 @@ class ScidashClient(object):
 
         return self
 
-    def upload_score(self, data=None):
+    def upload_test_score(self, data=None):
         """
         Main method for uploading
 
@@ -134,7 +135,13 @@ class ScidashClient(object):
 
         return r
 
-    def upload_suite(self, suite, score_matrix):
+    def upload_score(self, data):
+        helper.deprecated(method_name="upload_score()",
+                will_be_removed="2.0.0", replacement="upload_test_score()")
+
+        self.upload_test_score(data)
+
+    def upload_suite_score(self, suite, score_matrix):
         """upload_suite
 
         uploading score matrix with suite information
@@ -177,3 +184,9 @@ class ScidashClient(object):
             responses.append(self.upload_score(data=score))
 
         return responses
+
+    def upload_suite(self, data):
+        helper.deprecated(method_name="upload_suite()",
+                will_be_removed="2.0.0", replacement="upload_suite_score()")
+
+        self.upload_suite_score(data)
