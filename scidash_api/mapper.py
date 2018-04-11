@@ -140,7 +140,7 @@ class ScidashClientMapper(object):
         self.validator = ScidashClientDataValidator()
 
 
-    def convert(self, raw_data=None):
+    def convert(self, raw_data=None, strict=False):
         """convert
         main method for converting
 
@@ -150,11 +150,15 @@ class ScidashClientMapper(object):
         """
 
         if raw_data is None:
-            return self.OUTPUT_SCHEME
+            return raw_data
 
-        if not self.validator.validate_score(raw_data):
+        if not self.validator.validate_score(raw_data) and strict:
             raise ScidashClientException('WRONG DATA:'
                     '{}'.format(self.validator.get_errors()))
+        elif not self.validator.validate_score(raw_data):
+            logger.error('WRONG DATA:'
+                    '{}'.format(self.validator.get_errors()))
+            return None
 
         result = copy.deepcopy(self.OUTPUT_SCHEME)
 

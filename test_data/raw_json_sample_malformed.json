@@ -1,0 +1,29 @@
+{"_class": {"name": "ZScore", "url": ""},
+ "hash": "94bf784e39e88aa2f2e01c1d1d9bdaeeff5cbb5f0c0cae5f05530c79",
+ "model": {"_class": {"name": "ReducedModel", "url": ""},
+           "capabilities": ["Runnable",
+                            "ReceivesCurrent",
+                            "ReceivesSquareCurrent",
+                            "ProducesActionPotentials",
+                            "ProducesSpikes",
+                            "ProducesMembranePotential"],
+           "hash": "c3dd401eadcc4afde47daeeb350b99c0b2d3ca32a432900dd90842ed",
+           "backend": "JNeuroML",
+           "name": "Izhikevich",
+           "url": "https://github.com/scidash/neuronunit/blob/master/neuronunit/models/NeuroML2/LEMS_2007One.xml"},
+ "observation": {"mean": 8,
+                 "std": 3,
+                 "url": "http://somewhere.thathasdata.com"},
+  "prediction": {
+    "test_prediction": "as_dict"
+  },
+ "raw": "-0.3333",
+ "related_data": {},
+ "score": "Hi, it's malformed score",
+ "score_type": "ZScore",
+ "sort_key": 0.7388826803635273,
+ "summary": "=== Model Izhikevich achieved score Z = -0.33 on test 'MyTest'. ===",
+ "test": [],
+ "unpicklable": []
+}
+

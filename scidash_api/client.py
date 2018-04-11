@@ -96,10 +96,12 @@ class ScidashClient(object):
             data = json.loads(data.json(add_props=True, string=True))
 
         self.data = self.mapper.convert(data)
-        self.data.get('test_instance').update({
-            "build_info": self.build_info,
-            "hostname": self.hostname
-            })
+
+        if self.data is not None:
+            self.data.get('test_instance').update({
+                "build_info": self.build_info,
+                "hostname": self.hostname
+                })
 
         return self
 
@@ -112,6 +114,9 @@ class ScidashClient(object):
 
         if data is not None:
             self.set_data(data)
+
+        if self.data is None:
+            return False
 
         files = {
                 'file': (self.config.get('file_name'), json.dumps(self.data))
