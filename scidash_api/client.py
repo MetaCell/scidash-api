@@ -139,7 +139,7 @@ class ScidashClient(object):
         helper.deprecated(method_name="upload_score()",
                 will_be_removed="2.0.0", replacement="upload_test_score()")
 
-        self.upload_test_score(data)
+        return self.upload_test_score(data)
 
     def upload_suite_score(self, suite, score_matrix):
         """upload_suite
@@ -181,12 +181,12 @@ class ScidashClient(object):
 
                 score.get('test').get('test_suites').append(suite)
 
-            responses.append(self.upload_score(data=score))
+            responses.append(self.upload_test_score(data=score))
 
         return responses
 
-    def upload_suite(self, data):
+    def upload_suite(self, suite, score_matrix):
         helper.deprecated(method_name="upload_suite()",
                 will_be_removed="2.0.0", replacement="upload_suite_score()")
 
-        self.upload_suite_score(data)
+        return self.upload_suite_score(suite, score_matrix)
