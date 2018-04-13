@@ -158,7 +158,7 @@ class ScidashClient(object):
 
         if isinstance(score_matrix, six.string_types):
             score_matrix = json.loads(score_matrix)
-        elif not isinstance(score_matrix, list):
+        elif not isinstance(score_matrix, dict):
             score_matrix = json.loads(score_matrix.json(add_props=True,
                 string=True))
 
@@ -168,8 +168,9 @@ class ScidashClient(object):
             hash_list.append(test.get('hash'))
 
         responses = []
+        raw_score_list = score_matrix.get('scores')
 
-        flat_score_list = [score for score_list in score_matrix for score in
+        flat_score_list = [score for score_list in raw_score_list for score in
                 score_list]
 
         for score in flat_score_list:
