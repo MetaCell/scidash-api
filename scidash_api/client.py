@@ -135,7 +135,7 @@ class ScidashClient(object):
 
         return r
 
-    def upload_score(self, data):
+    def upload_score(self, data=None):
         helper.deprecated(method_name="upload_score()",
                 will_be_removed="2.0.0", replacement="upload_test_score()")
 
