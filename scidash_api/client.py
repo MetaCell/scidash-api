@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function
 import json
+from platform import platform, system
 
 import requests
 import six
-from platform import platform
 
 from scidash_api import settings
 from scidash_api.mapper import ScidashClientMapper
@@ -28,7 +28,11 @@ class ScidashClient(object):
 
         self.data = {}
 
-        self.build_info = build_info if build_info is not None else platform()
+        if build_info is None:
+            self.build_info = "{}/{}".format(platform(), system())
+        else:
+            self.build_info = build_info
+
         self.hostname = hostname
 
         self.mapper = ScidashClientMapper()
@@ -46,15 +50,16 @@ class ScidashClient(object):
         """
         if self.config.get('base_url')[-1] is '/':
             raise exceptions.ScidashClientWrongConfigException('Remove last '
-                    'slash from base_url')
+                                                               'slash '
+                                                               'from base_url')
 
     def get_headers(self):
         """
         Shortcut for gettings headers for uploading
         """
         return {
-                'Authorization': 'JWT {}'.format(self.token)
-                }
+            'Authorization': 'JWT {}'.format(self.token)
+        }
 
     def login(self, username, password):
         """
@@ -76,7 +81,8 @@ class ScidashClient(object):
         try:
             self.token = r.json().get('token')
         except Exception as e:
-            raise exceptions.ScidashClientException('Authentication Failed: {}'.format(e))
+            raise exceptions.ScidashClientException('Authentication'
+                                                    ' Failed: {}'.format(e))
 
         if self.token is None:
             raise exceptions.ScidashClientException('Authentication Failed: '
@@ -135,7 +141,7 @@ class ScidashClient(object):
 
         return r
 
-    def upload_score(self, data):
+    def upload_score(self, data=None):
         helper.deprecated(method_name="upload_score()",
                 will_be_removed="2.0.0", replacement="upload_test_score()")
 
