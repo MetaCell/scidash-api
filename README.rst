@@ -22,7 +22,7 @@ How to use it
     client_instance.login({'username': 'my_username', 'password': 'my_secret_password'})
 
     # and then call upload method for score object from sciunit
-    client_instance.upload_score(score)
+    client_instance.upload_test_score(score)
 
     # or call upload_suite method passing suite and score_matrix sciunit objects
-    client_instance.upload_suite(suite, score_matrix)
+    client_instance.upload_suite_score(suite, score_matrix)
