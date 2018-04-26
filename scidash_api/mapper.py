@@ -19,6 +19,10 @@ class ScidashClientMapper(object):
 
     # Expected output format
     OUTPUT_SCHEME = {
+            'score_class': {
+                'class_name': None,
+                'url': None
+                },
             'model_instance': {
                 'model_class': {
                     'class_name': None,
@@ -55,6 +59,14 @@ class ScidashClientMapper(object):
             }
 
     KEYS_MAPPING = [
+            (
+                'score_class/class_name',
+                '_class/name'
+                ),
+            (
+                'score_class/url',
+                '_class/url'
+                ),
             (
                 'model_instance/model_class/class_name',
                 'model/_class/name'
