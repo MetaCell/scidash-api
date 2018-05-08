@@ -79,10 +79,7 @@ class ScidashClientMapper(object):
                 'model_instance/name',
                 'model/name'
                 ),
-            (
-                'model_instance/backend',
-                'model/backend'
-                ),
+
             (
                 'model_instance/url',
                 'model/url'
@@ -143,10 +140,14 @@ class ScidashClientMapper(object):
                 'model/run_params'
                 ),
             (
+                'model_instance/backend',
+                'model/backend'
+                ),
+            (
                 'model_instance/attrs',
                 'model/attrs'
                 )
-            ]
+        ]
 
     def __init__(self):
         self.validator = ScidashClientDataValidator()
