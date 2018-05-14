@@ -11,4 +11,3 @@ def deprecated(method_name, will_be_removed, replacement, strict=False):
             " please, use {} instead".format(method_name, will_be_removed,
                 replacement)
             )
-

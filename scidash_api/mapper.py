@@ -1,7 +1,6 @@
 import logging
 import copy
 
-import cerberus
 import dpath.util
 
 from scidash_api.exceptions import ScidashClientException
@@ -30,6 +29,7 @@ class ScidashClientMapper(object):
                     'capabilities': []
                     },
                 'backend': None,
+                'hash_id': None,
                 'attributes': {},
                 'name': None,
                 'run_params': {},
@@ -45,6 +45,7 @@ class ScidashClientMapper(object):
             'test_instance': {
                 'description': None,
                 'test_suites': [],
+                'hash_id': None,
                 'test_class': {
                     'class_name': None,
                     'url': None
@@ -147,11 +148,10 @@ class ScidashClientMapper(object):
                 'model_instance/attrs',
                 'model/attrs'
                 )
-        ]
+            ]
 
     def __init__(self):
         self.validator = ScidashClientDataValidator()
-
 
     def convert(self, raw_data=None, strict=False):
         """convert
@@ -198,5 +198,21 @@ class ScidashClientMapper(object):
                                             })
         except KeyError:
             pass
+
+        model_instance_hash_id = '{}_{}'.format(
+                raw_data.get('model').get('hash'),
+                raw_data.get('model').get('_id')
+                )
+
+        test_instance_hash_id = '{}_{}'.format(
+                raw_data.get('test').get('hash'),
+                raw_data.get('test').get('_id')
+                )
+
+        result.get('model_instance').update({'hash_id':
+            model_instance_hash_id})
+
+        result.get('test_instance').update({'hash_id':
+            test_instance_hash_id})
 
         return result
