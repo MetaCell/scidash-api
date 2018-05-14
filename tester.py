@@ -40,7 +40,7 @@ class ScidashApiTestCase(unittest.TestCase):
         }
 
     def test_login(self):
-        with self.assertRaises(e.ScidashClientException) as c:
+        with self.assertRaises(e.ScidashClientException):
             self.client_instance.login(**self.broken_user)
 
         self.client_instance.login(**self.test_user)
@@ -76,10 +76,9 @@ class ScidashApiTestCase(unittest.TestCase):
         r = self.client_instance.upload_test_score(self.json_dict_malformed)
         self.assertFalse(r)
 
-
     def test_config_checking(self):
-        with self.assertRaises(e.ScidashClientWrongConfigException) as c:
-            broken_instance = ScidashClient(config={
+        with self.assertRaises(e.ScidashClientWrongConfigException):
+            ScidashClient(config={
                 'base_url': 'http://broken_url/'
                 })
 
@@ -136,13 +135,13 @@ class ScidashMapperTestCase(unittest.TestCase):
                     )
 
     def test_exception_raising_well(self):
-        with self.assertRaises(e.ScidashClientException) as c:
+        with self.assertRaises(e.ScidashClientException):
             self.mapper_instance.convert(self.json_dict_malformed,
                     strict=True)
 
         broken_raw_data = nan_test_object.NAN_OBJECT
 
-        with self.assertRaises(e.ScidashClientException) as c:
+        with self.assertRaises(e.ScidashClientException):
             self.mapper_instance.convert(broken_raw_data, strict=True)
 
     def test_exception_was_not_raised(self):
