@@ -39,6 +39,7 @@ class ScidashClientMapper(object):
             'raw': None,
             'related_data': {},
             'score': None,
+            'hash_id': None,
             'sort_key': None,
             'score_type': None,
             'summary': None,
@@ -209,10 +210,19 @@ class ScidashClientMapper(object):
                 raw_data.get('test').get('_id')
                 )
 
+        score_instance_hash_id = '{}_{}'.format(
+                raw_data.get('hash'),
+                raw_data.get('_id')
+                )
+
+
         result.get('model_instance').update({'hash_id':
             model_instance_hash_id})
 
         result.get('test_instance').update({'hash_id':
             test_instance_hash_id})
+
+        result.update({'hash_id':
+            score_instance_hash_id})
 
         return result
