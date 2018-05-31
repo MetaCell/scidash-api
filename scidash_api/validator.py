@@ -1,7 +1,6 @@
 import math
 import numbers
 
-from scidash_api.exceptions import ScidashClientException
 from cerberus import Validator
 
 
@@ -28,6 +27,19 @@ class ScidashClientDataValidator():
 
     # Validation schema for raw score
     SCORE_SCHEMA = {
+            '_class': {
+                'type': 'dict',
+                'schema': {
+                    'url': {
+                        'type': 'string',
+                        'required': True
+                        },
+                    'name': {
+                        'type': 'string',
+                        'required': True
+                        }
+                    }
+                },
             'model': {
                 'type': 'dict',
                 'schema': {
@@ -38,7 +50,8 @@ class ScidashClientDataValidator():
                                 'type': 'string'
                                 },
                             'url': {
-                                'type': 'string'
+                                'type': 'string',
+                                'required': True
                                 }
                             }
                         },
@@ -46,50 +59,75 @@ class ScidashClientDataValidator():
                         'type': 'dict',
                         'required': False
                         },
+                    'hash': {
+                            'type': 'string',
+                            'required': True
+                            },
+                    '_id': {
+                            'type': 'number',
+                            'required': True
+                            },
                     'capabilities': {
                         'type': 'list',
+                        'required': True,
                         'schema': {
                             'type': 'string'
                             }
                         },
                     'name': {
-                        'type': 'string'
+                        'type': 'string',
+                        'required': True
                         },
                     'run_params': {
                         'type': 'dict',
                         'required': False
                         },
                     'url': {
-                        'type': 'string'
+                        'type': 'string',
+                        'required': True
                         }
                     }
                 },
             'observation': {
-                'type': 'dict'
+                'type': 'dict',
+                'required': True
                 },
             'prediction': {
                 'type': ['number', 'dict'],
+                'required': True,
                 'isnan': False
                 },
             'raw': {
-                'type': 'string'
+                'type': 'string',
+                'required': True
                 },
             'related_data': {
-                'type': 'dict'
+                'type': 'dict',
+                'required': True
                 },
             'score': {
                 'type': 'number',
-                'isnan': False
+                'isnan': False,
+                'required': True
                 },
             'score_type': {
                     'type': 'string'
                     },
             'sort_key': {
                     'type': 'number',
-                    'isnan': False
-                    },
+                    'isnan': False,
+                    'required': True},
             'summary': {
-                    'type': 'string'
+                    'type': 'string',
+                    'required': True
+                    },
+            'hash': {
+                    'type': 'string',
+                    'required': True
+                    },
+            '_id': {
+                    'type': 'number',
+                    'required': True
                     },
             'test': {
                     'type': 'dict',
@@ -98,26 +136,41 @@ class ScidashClientDataValidator():
                             'type': 'dict',
                             'schema': {
                                 'name': {
-                                    'type': 'string'
+                                    'type': 'string',
+                                    'required': True
                                     },
                                 'url': {
-                                    'type': 'string'
+                                    'type': 'string',
+                                    'required': True
                                     }
-                                }
+                                },
+                            'required': True
                             },
                         'description': {
                             'type': 'string',
-                            'nullable': True
+                            'nullable': True,
+                            'required': True
                             },
+                        'hash': {
+                                'type': 'string',
+                                'required': True
+                                },
+                        '_id': {
+                                'type': 'number',
+                                'required': True
+                                },
                         'name': {
-                            'type': 'string'
+                            'type': 'string',
+                            'required': True
                             },
                         'observation': {
-                            'type': 'dict'
+                            'type': 'dict',
+                            'required': True
                             },
                         'verbose': {
                             'type': 'number',
-                            'isnan': False
+                            'isnan': False,
+                            'required': True
                             }
                         }
                     }

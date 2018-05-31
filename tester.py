@@ -30,8 +30,8 @@ class ScidashApiTestCase(unittest.TestCase):
             cls.json_dict_malformed = f.read()
 
         cls.test_user = {
-                'username': 'admin_test',
-                'password': 'admin_test_password'
+                'username': 'admin',
+                'password': 'admin_test'
                 }
 
         cls.broken_user = {

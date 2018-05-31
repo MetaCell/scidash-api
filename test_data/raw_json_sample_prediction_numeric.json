@@ -1,5 +1,6 @@
 {"_class": {"name": "ZScore", "url": "http://test-url.for/not-spaming-data/in-database"},
  "hash": "94bf784e39e88aa2f2e01c1d1d9bdaeeff5cbb5f0c0cae5f05530c79",
+ "_id": 111,
  "model": {"_class": {"name": "ReducedModel", "url": "http://test-url.for/not-spaming-data/in-database"},
            "attrs": {},
            "capabilities": ["Runnable",

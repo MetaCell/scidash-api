@@ -152,6 +152,7 @@ class ScidashClientMapper(object):
             ]
 
     def __init__(self):
+        self.errors = []
         self.validator = ScidashClientDataValidator()
 
     def convert(self, raw_data=None, strict=False):
@@ -167,11 +168,14 @@ class ScidashClientMapper(object):
             return raw_data
 
         if not self.validator.validate_score(raw_data) and strict:
-            raise ScidashClientException('WRONG DATA:'
+            raise ScidashClientException('CLIENT -> INVALID DATA: '
                     '{}'.format(self.validator.get_errors()))
         elif not self.validator.validate_score(raw_data):
-            logger.error('WRONG DATA:'
+            logger.error('CLIENT -> INVALID DATA: '
                     '{}'.format(self.validator.get_errors()))
+
+            self.errors.append(self.validator.get_errors())
+
             return None
 
         result = copy.deepcopy(self.OUTPUT_SCHEME)
@@ -214,7 +218,6 @@ class ScidashClientMapper(object):
                 raw_data.get('hash'),
                 raw_data.get('_id')
                 )
-
 
         result.get('model_instance').update({'hash_id':
             model_instance_hash_id})
