@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function
 import json
+import logging
 from platform import platform, system
 
 import requests
@@ -9,6 +10,8 @@ from scidash_api import settings
 from scidash_api.mapper import ScidashClientMapper
 from scidash_api import exceptions
 from scidash_api import helper
+
+logger = logging.getLogger(__name__)
 
 
 class ScidashClient(object):
@@ -27,6 +30,7 @@ class ScidashClient(object):
         self.config = settings.CONFIG
 
         self.data = {}
+        self.errors = []
 
         if build_info is None:
             self.build_info = "{}/{}".format(platform(), system())
@@ -109,6 +113,8 @@ class ScidashClient(object):
                 "build_info": self.build_info,
                 "hostname": self.hostname
                 })
+        else:
+            self.errors = self.errors + self.mapper.errors
 
         return self
 
@@ -138,6 +144,17 @@ class ScidashClient(object):
 
         r = requests.put('{}{}'.format(base_url, upload_url), headers=headers,
                 files=files)
+
+        if r.status_code == 400 or r.status_code == 500:
+            self.errors.append(r.text)
+
+            if r.status_code == 400:
+                logger.error('SERVER -> INVALID DATA: '
+                        '{}'.format(self.errors))
+
+            if r.status_code == 500:
+                logger.error('SERVER -> SERVER ERROR: '
+                        '{}'.format(self.errors))
 
         return r
 
