@@ -8,6 +8,7 @@
                             "ProducesSpikes",
                             "ProducesMembranePotential"],
            "hash": "c3dd401eadcc4afde47daeeb350b99c0b2d3ca32a432900dd90842ed",
+           "_id": 1111,
            "backend": "JNeuroML",
            "name": "Izhikevich",
            "url": "https://github.com/scidash/neuronunit/blob/master/neuronunit/models/NeuroML2/LEMS_2007One.xml"},
