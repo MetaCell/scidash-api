@@ -37,7 +37,6 @@ class ScidashClientMapper(object):
                 },
             'prediction': None,
             'raw': None,
-            'related_data': {},
             'score': None,
             'hash_id': None,
             'sort_key': None,
@@ -93,10 +92,6 @@ class ScidashClientMapper(object):
             (
                 'raw',
                 'raw'
-                ),
-            (
-                'related_data',
-                'related_data'
                 ),
             (
                 'score',
@@ -227,5 +222,8 @@ class ScidashClientMapper(object):
 
         result.update({'hash_id':
             score_instance_hash_id})
+
+        if type(result.get('score')) is bool:
+            result['score'] = float(result.get('score'))
 
         return result

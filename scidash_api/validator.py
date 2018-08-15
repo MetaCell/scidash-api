@@ -101,12 +101,8 @@ class ScidashClientDataValidator():
                 'type': 'string',
                 'required': True
                 },
-            'related_data': {
-                'type': 'dict',
-                'required': True
-                },
             'score': {
-                'type': 'number',
+                'type':['number', 'boolean'],
                 'isnan': False,
                 'required': True
                 },
