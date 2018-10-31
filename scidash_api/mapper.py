@@ -98,10 +98,6 @@ class ScidashClientMapper(object):
                 'score'
                 ),
             (
-                'sort_key',
-                'sort_key'
-                ),
-            (
                 'score_type',
                 'score_type'
                 ),
@@ -132,10 +128,6 @@ class ScidashClientMapper(object):
             ]
 
     OPTIONAL_KEYS_MAPPING = [
-            (
-                'model_instance/run_params',
-                'model/run_params'
-                ),
             (
                 'model_instance/backend',
                 'model/backend'
@@ -214,6 +206,18 @@ class ScidashClientMapper(object):
                 raw_data.get('_id')
                 )
 
+        sort_key = raw_data.get('norm_score') if not raw_data.get('sort_key',
+                                                              False) else \
+        raw_data.get('sort_key')
+
+        run_params = raw_data.get('model').get('run_params', False)
+
+        if run_params:
+            for key in run_params:
+                run_params.update({
+                    key: str(run_params.get(key))
+                })
+
         result.get('model_instance').update({'hash_id':
             model_instance_hash_id})
 
@@ -222,6 +226,15 @@ class ScidashClientMapper(object):
 
         result.update({'hash_id':
             score_instance_hash_id})
+
+        result.update({
+            'sort_key': sort_key
+        })
+
+        if run_params:
+            result.get('model_instance').update({
+                'run_params': run_params
+            })
 
         if type(result.get('score')) is bool:
             result['score'] = float(result.get('score'))
