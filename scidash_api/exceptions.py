@@ -1,3 +1,5 @@
+class ScidashClientValidatorException(Exception):
+    pass
 
 
 class ScidashClientException(Exception):
