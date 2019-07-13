@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-cerberus==1.1
+cerberus>=1.2
 certifi==2017.11.5        # via requests
 chardet==3.0.4            # via requests
 dpath==1.4.2

@@ -25,6 +25,7 @@ class ScidashClientMapper(object):
             'model_instance': {
                 'model_class': {
                     'class_name': None,
+                    'import_path': None,
                     'url': '',
                     'capabilities': []
                     },
@@ -48,6 +49,7 @@ class ScidashClientMapper(object):
                 'hash_id': None,
                 'test_class': {
                     'class_name': None,
+                    'import_path': None,
                     'url': None
                     },
                 'observation': {
@@ -75,6 +77,10 @@ class ScidashClientMapper(object):
             (
                 'model_instance/model_class/url',
                 'model/_class/url'
+                ),
+            (
+                'model_instance/model_class/import_path',
+                'model/_class/import_path'
                 ),
             (
                 'model_instance/name',
@@ -116,6 +122,10 @@ class ScidashClientMapper(object):
             (
                 'test_instance/test_class/url',
                 'test/_class/url'
+                ),
+            (
+                'test_instance/test_class/import_path',
+                'test/_class/import_path'
                 ),
             (
                 'test_instance/observation',
