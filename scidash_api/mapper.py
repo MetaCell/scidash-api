@@ -25,6 +25,7 @@ class ScidashClientMapper(object):
             'model_instance': {
                 'model_class': {
                     'class_name': None,
+                    'import_path': None,
                     'url': '',
                     'capabilities': []
                     },
@@ -37,7 +38,6 @@ class ScidashClientMapper(object):
                 },
             'prediction': None,
             'raw': None,
-            'related_data': {},
             'score': None,
             'hash_id': None,
             'sort_key': None,
@@ -49,6 +49,7 @@ class ScidashClientMapper(object):
                 'hash_id': None,
                 'test_class': {
                     'class_name': None,
+                    'import_path': None,
                     'url': None
                     },
                 'observation': {
@@ -78,6 +79,10 @@ class ScidashClientMapper(object):
                 'model/_class/url'
                 ),
             (
+                'model_instance/model_class/import_path',
+                'model/_class/import_path'
+                ),
+            (
                 'model_instance/name',
                 'model/name'
                 ),
@@ -95,16 +100,8 @@ class ScidashClientMapper(object):
                 'raw'
                 ),
             (
-                'related_data',
-                'related_data'
-                ),
-            (
                 'score',
                 'score'
-                ),
-            (
-                'sort_key',
-                'sort_key'
                 ),
             (
                 'score_type',
@@ -127,6 +124,10 @@ class ScidashClientMapper(object):
                 'test/_class/url'
                 ),
             (
+                'test_instance/test_class/import_path',
+                'test/_class/import_path'
+                ),
+            (
                 'test_instance/observation',
                 'test/observation'
                 ),
@@ -137,10 +138,6 @@ class ScidashClientMapper(object):
             ]
 
     OPTIONAL_KEYS_MAPPING = [
-            (
-                'model_instance/run_params',
-                'model/run_params'
-                ),
             (
                 'model_instance/backend',
                 'model/backend'
@@ -219,6 +216,18 @@ class ScidashClientMapper(object):
                 raw_data.get('_id')
                 )
 
+        sort_key = raw_data.get('norm_score') if not raw_data.get('sort_key',
+                                                              False) else \
+        raw_data.get('sort_key')
+
+        run_params = raw_data.get('model').get('run_params', False)
+
+        if run_params:
+            for key in run_params:
+                run_params.update({
+                    key: str(run_params.get(key))
+                })
+
         result.get('model_instance').update({'hash_id':
             model_instance_hash_id})
 
@@ -227,5 +236,17 @@ class ScidashClientMapper(object):
 
         result.update({'hash_id':
             score_instance_hash_id})
+
+        result.update({
+            'sort_key': sort_key
+        })
+
+        if run_params:
+            result.get('model_instance').update({
+                'run_params': run_params
+            })
+
+        if type(result.get('score')) is bool:
+            result['score'] = float(result.get('score'))
 
         return result

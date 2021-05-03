@@ -33,9 +33,10 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     install_requires=[
-        'cerberus==1.1',
+        'cerberus>=1.2',
         'dpath==1.4.2',
         'requests==2.18.4',
         'six==1.11.0'
     ]
 )
+

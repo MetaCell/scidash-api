@@ -3,6 +3,8 @@ import numbers
 
 from cerberus import Validator
 
+from scidash_api.exceptions import ScidashClientValidatorException
+
 
 class ValidatorExtended(Validator):
 
@@ -101,12 +103,8 @@ class ScidashClientDataValidator():
                 'type': 'string',
                 'required': True
                 },
-            'related_data': {
-                'type': 'dict',
-                'required': True
-                },
             'score': {
-                'type': 'number',
+                'type':['number', 'boolean'],
                 'isnan': False,
                 'required': True
                 },
@@ -116,7 +114,13 @@ class ScidashClientDataValidator():
             'sort_key': {
                     'type': 'number',
                     'isnan': False,
-                    'required': True},
+                    'required': False
+            },
+            'norm_score': {
+                    'type': 'number',
+                    'isnan': False,
+                    'required': False
+            },
             'summary': {
                     'type': 'string',
                     'required': True
@@ -192,6 +196,11 @@ class ScidashClientDataValidator():
 
         if not valid:
             self.errors = validator.errors
+
+        if not raw_data.get('sort_key', False):
+            if not raw_data.get('norm_score', False):
+                raise ScidashClientValidatorException("sort_key or norm_score"
+                                                      "not found")
 
         return valid
 
