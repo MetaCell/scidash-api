@@ -171,11 +171,6 @@ class ScidashClientDataValidator():
                             'type': 'dict',
                             'required': True
                             },
-                        'verbose': {
-                            'type': 'number',
-                            'isnan': False,
-                            'required': True
-                            }
                         }
                     }
             }
