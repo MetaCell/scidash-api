@@ -3,6 +3,6 @@
       "ip": "http://34.69.33.177:8000"
    },
    "prod": {
-      "ip": "http://34.69.33.177:8000"
+      "ip": "https://dash.scidash.org"
    }
 }
