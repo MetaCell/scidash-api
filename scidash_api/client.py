@@ -106,6 +106,8 @@ class ScidashClient(object):
         elif not isinstance(data, dict):
             data = json.loads(data.json(add_props=True, string=True))
 
+        print(data['hash'])
+            
         self.data = self.mapper.convert(data)
 
         if self.data is not None:
