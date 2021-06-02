@@ -64,32 +64,32 @@ class ScidashClientMapper(object):
     KEYS_MAPPING = [
             (
                 'score_class/class_name',
-                '_class/name'
+                '_class#name'
                 ),
             (
                 'score_class/url',
-                '_class/url'
+                '_class#url'
                 ),
             (
                 'model_instance/model_class/class_name',
-                'model/_class/name'
+                'model#py/state#_class#name'
                 ),
             (
                 'model_instance/model_class/url',
-                'model/_class/url'
+                'model#py/state#_class#url'
                 ),
             (
                 'model_instance/model_class/import_path',
-                'model/_class/import_path'
+                'model#py/state#_class#import_path'
                 ),
             (
                 'model_instance/name',
-                'model/name'
+                'model#py/state#name'
                 ),
 
             (
                 'model_instance/url',
-                'model/url'
+                'model#py/state#url'
                 ),
             (
                 'prediction',
@@ -113,38 +113,38 @@ class ScidashClientMapper(object):
                 ),
             (
                 'test_instance/description',
-                'test/description'
+                'test#py/state#description'
                 ),
             (
                 'test_instance/test_class/class_name',
-                'test/name'
+                'test#py/state#name'
                 ),
             (
                 'test_instance/test_class/url',
-                'test/_class/url'
+                'test#py/state#_class#url'
                 ),
             (
                 'test_instance/test_class/import_path',
-                'test/_class/import_path'
+                'test#py/state#_class#import_path'
                 ),
             (
                 'test_instance/observation',
-                'test/observation'
+                'test#py/state#observation'
                 ),
             (
                 'test_instance/verbose',
-                'test/verbose'
+                'test#py/state#verbose'
                 ),
             ]
 
     OPTIONAL_KEYS_MAPPING = [
             (
                 'model_instance/backend',
-                'model/backend'
+                'model/py/state#backend'
                 ),
             (
                 'model_instance/attrs',
-                'model/attrs'
+                'model/py/state#attrs'
                 )
             ]
 
@@ -164,56 +164,61 @@ class ScidashClientMapper(object):
         if raw_data is None:
             return raw_data
 
+        raw_data = raw_data['py/state']
+
         if not self.validator.validate_score(raw_data) and strict:
             raise ScidashClientException('CLIENT -> INVALID DATA: '
                     '{}'.format(self.validator.get_errors()))
         elif not self.validator.validate_score(raw_data):
             logger.error('CLIENT -> INVALID DATA: '
                     '{}'.format(self.validator.get_errors()))
-
             self.errors.append(self.validator.get_errors())
-
             return None
 
         result = copy.deepcopy(self.OUTPUT_SCHEME)
 
         for item, address in self.KEYS_MAPPING:
-            dpath.util.set(result, item, dpath.util.get(raw_data, address))
+            dpath.util.set(result, item, dpath.util.get(raw_data, address,'#'))
+
+        for item, address in self.KEYS_MAPPING:
+            if item == "test_instance/observation":
+                dpath.util.set(result, item, dpath.util.get(raw_data, address,'#'))
 
         for item, address in self.OPTIONAL_KEYS_MAPPING:
             try:
-                dpath.util.set(result, item, dpath.util.get(raw_data, address))
+                dpath.util.set(result, item, dpath.util.get(raw_data, address,'#'))
             except KeyError:
                 logger.info("Optional value {} is not found".format(item))
 
-        for capability in dpath.util.get(raw_data, 'model/capabilities'):
+        for capability in dpath.util.get(raw_data, 'model#py/state#capabilities','#'):
             result.get('model_instance').get('model_class') \
                                         .get('capabilities').append({
-                                            'class_name': capability
+                                            'class_name': capability.get('py/type')
                                         })
 
         try:
-            for test_suite in dpath.util.get(raw_data, 'test/test_suites'):
+            for test_suite in dpath.util.get(raw_data, 'test#py/state#test_suites','#'):
                 result.get('test_instance').get('test_suites').append({
                                                 'name': test_suite.get('name'),
-                                                'hash': test_suite.get('hash')
+                                                'hash': test_suite.get('hash', binascii.b2a_hex(os.urandom(15)))
                                             })
         except KeyError:
             pass
 
+        import os,binascii
         model_instance_hash_id = '{}_{}'.format(
-                raw_data.get('model').get('hash'),
-                raw_data.get('model').get('_id')
+                raw_data.get('model').get('hash', binascii.b2a_hex(os.urandom(15))),
+                raw_data.get('model').get('_id', -1)
                 )
 
         test_instance_hash_id = '{}_{}'.format(
-                raw_data.get('test').get('hash'),
-                raw_data.get('test').get('_id')
+                raw_data.get('test').get('hash', binascii.b2a_hex(os.urandom(15))),
+                raw_data.get('test').get('_id', -1)
                 )
 
         score_instance_hash_id = '{}_{}'.format(
-                raw_data.get('hash'),
-                raw_data.get('_id')
+                raw_data.get('hash', binascii.b2a_hex(os.urandom(15))),
+                raw_data.get('_id', -1)
                 )
 
         sort_key = raw_data.get('norm_score') if not raw_data.get('sort_key',

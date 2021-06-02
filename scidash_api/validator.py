@@ -1,9 +1,45 @@
 import math
 import numbers
+import importlib
+import json
+import jsonpickle
+import sciunit
+import sciunit.scores
 
 from cerberus import Validator
+from copy import deepcopy
 
 from scidash_api.exceptions import ScidashClientValidatorException
+
+
+def build_destructured_unit(unit_dict):
+    unit = pq.UnitQuantity(
+        unit_dict.get('name'),
+        import_class(unit_dict.get('base').get('quantity')) *
+        unit_dict.get('base').get('coefficient'), unit_dict.get('symbol')
+    )
+
+    return unit
+
+
+def import_class(import_path: str) -> object:
+    """ Import class from import_path
+
+    :type str:
+    :param import_path: path to module similar to path.to.module.ClassName
+
+    :returns: imported class
+    """
+
+    splitted = import_path.split('.')
+
+    class_name = splitted[-1:][0]
+    module_path = ".".join(splitted[:-1])
+
+    imported_module = importlib.import_module(module_path)
+    klass = getattr(imported_module, class_name)
+
+    return klass
 
 
 class ValidatorExtended(Validator):
@@ -43,53 +79,55 @@ class ScidashClientDataValidator():
                     }
                 },
             'model': {
-                'type': 'dict',
-                'schema': {
-                    '_class': {
-                        'type': 'dict',
-                        'schema': {
-                            'name': {
-                                'type': 'string'
-                                },
-                            'url': {
-                                'type': 'string',
-                                'required': True
+                'py/state': {
+                    'type': 'dict',
+                    'schema': {
+                        '_class': {
+                            'type': 'dict',
+                            'schema': {
+                                'name': {
+                                    'type': 'string'
+                                    },
+                                'url': {
+                                    'type': 'string',
+                                    'required': True
+                                    }
                                 }
-                            }
-                        },
-                    'attrs': {
-                        'type': 'dict',
-                        'required': False
-                        },
-                    'hash': {
+                            },
+                        'attrs': {
+                            'type': 'dict',
+                            'required': False
+                            },
+                        'hash': {
+                                'type': 'string',
+                                'required': False
+                                },
+                        '_id': {
+                                'type': 'number',
+                                'required': True
+                                },
+                        'capabilities': {
+                            'type': 'list',
+                            'required': True,
+                            'schema': {
+                                'type': 'string'
+                                }
+                            },
+                        'name': {
                             'type': 'string',
                             'required': True
                             },
-                    '_id': {
-                            'type': 'number',
-                            'required': True
+                        'run_params': {
+                            'type': 'dict',
+                            'required': False
                             },
-                    'capabilities': {
-                        'type': 'list',
-                        'required': True,
-                        'schema': {
-                            'type': 'string'
+                        'url': {
+                            'type': 'string',
+                            'required': True
                             }
-                        },
-                    'name': {
-                        'type': 'string',
-                        'required': True
-                        },
-                    'run_params': {
-                        'type': 'dict',
-                        'required': False
-                        },
-                    'url': {
-                        'type': 'string',
-                        'required': True
                         }
-                    }
-                },
+                    },
+                 },
             'observation': {
                 'type': 'dict',
                 'required': True
@@ -127,7 +165,7 @@ class ScidashClientDataValidator():
                     },
             'hash': {
                     'type': 'string',
-                    'required': True
+                    'required': False
                     },
             '_id': {
                     'type': 'number',
@@ -157,7 +195,7 @@ class ScidashClientDataValidator():
                             },
                         'hash': {
                                 'type': 'string',
-                                'required': True
+                                'required': False
                                 },
                         '_id': {
                                 'type': 'number',
@@ -175,7 +213,7 @@ class ScidashClientDataValidator():
                     }
             }
 
-    def validate_score(self, raw_data):
+    def validate_score(self, data):
         """
         Checks, is score raw data valid and can be processed
 
@@ -183,21 +221,36 @@ class ScidashClientDataValidator():
         :returns: boolean
 
         """
+        try:
+            # old style
+            sciunit.settings['PREVALIDATE'] = True
+        except:
+            # new style
+            try:
+                sciunit.config_set('PREVALIDATE', True)
+            except:
+                sciunit.config.set('PREVALIDATE', True)
 
-        validator = ValidatorExtended(self.SCORE_SCHEMA)
-        validator.allow_unknown = True
+        class_data = data.get('test_class')
+        if not class_data:
+            class_data = data.get('test').get("py/state").get('_class')
 
-        valid = validator.validate(raw_data)
+        if not class_data.get('import_path', False):
+            return data
 
-        if not valid:
-            self.errors = validator.errors
+        test_class = import_class(class_data.get('import_path'))
 
-        if not raw_data.get('sort_key', False):
-            if not raw_data.get('norm_score', False):
-                raise ScidashClientValidatorException("sort_key or norm_score"
-                                                      "not found")
+        observation = deepcopy(data.get('observation'))  # json of observation
+        # Thicken the JSON with metadata required for deserialization
+        for key, value in observation.items():
+            if isinstance(value, dict) and 'units' in value:
+                observation[key] = {'py/object': 'quantities.quantity.Quantity',
+                                    'py/state': value}
+        observation = json.dumps(observation)  # As string for decoding
+        observation = jsonpickle.decode(observation)  # decode
+        test_class(observation)
+        return True
 
-        return valid
 
     def get_errors(self):
         """

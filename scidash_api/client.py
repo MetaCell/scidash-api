@@ -3,16 +3,54 @@ import json
 import logging
 from platform import platform, system
 
+import jsonpickle
 import requests
 import six
+import quantities as pq
 
 from scidash_api import settings
 from scidash_api.mapper import ScidashClientMapper
 from scidash_api import exceptions
 from scidash_api import helper
 
+from jsonpickle.handlers import BaseHandler
+
 logger = logging.getLogger(__name__)
 
+class QuantitiesHandler(BaseHandler):
+    def flatten(self, obj, data):
+        """This methods flattens all quantities into a base and units"""
+        result = {'base': str(obj.base.tolist()),
+                  'units': str(obj._dimensionality)}
+        if self.context.unpicklable:
+            data['py/quantity'] = result
+        else:
+            data = result
+        return data
+    def restore(self, data):
+        """If jsonpickle.encode() is called with unpicklable=True then
+        this method is used by jsonpickle.decode() to unserialize."""
+        obj = data['py/quantity']
+        base = np.array(obj['base'], dtype=np.float64)
+        units = obj['units']
+        return pq.Quantity(base, units)
+
+class UnitQuantitiesHandler(BaseHandler):
+    """Same as above but for unit quantities e.g. Test.units"""
+    def flatten(self, obj, data):
+        result = str(obj._dimensionality)
+        if self.context.unpicklable:
+            data['py/unitquantity'] = result
+        else:
+            data = result
+        return data
+    def restore(self, data):
+        units = data['py/unitquantity']
+        return pq.unit_registry[units]
+
+# Register these handlers
+jsonpickle.handlers.register(pq.Quantity, handler=QuantitiesHandler)
+jsonpickle.handlers.register(pq.UnitQuantity, handler=UnitQuantitiesHandler)
 
 class ScidashClient(object):
 
@@ -101,14 +139,10 @@ class ScidashClient(object):
         :param data:
         :returns: self
         """
-        if isinstance(data, six.string_types):
-            data = json.loads(data)
-        elif not isinstance(data, dict):
-            data = json.loads(data.json(add_props=True, string=True))
 
-        print(data['hash'])
-            
-        self.data = self.mapper.convert(data)
+        data = data.json(unpicklable=True, simplify=False, string=False)
+           
+        self.data  = self.mapper.convert(data)
 
         if self.data is not None:
             self.data.get('test_instance').update({
