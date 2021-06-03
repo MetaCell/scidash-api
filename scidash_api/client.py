@@ -132,7 +132,7 @@ class ScidashClient(object):
 
         return self
 
-    def set_data(self, data=None):
+    def set_data(self, score_data=None):
         """
         Sets data for uploading
 
@@ -140,7 +140,9 @@ class ScidashClient(object):
         :returns: self
         """
 
-        data = data.json(unpicklable=True, simplify=False, string=False)
+        data = score_data.json(unpicklable=True, simplify=False, string=False)
+        related_data = json.loads(jsonpickle.encode(score_data.related_data, make_refs=False, unpicklable=True))
+        data['py/state']['related_data'] = related_data
            
         self.data  = self.mapper.convert(data)
 

@@ -38,6 +38,7 @@ class ScidashClientMapper(object):
                 },
             'prediction': None,
             'raw': None,
+            'related_data': None,
             'score': None,
             'hash_id': None,
             'sort_key': None,
@@ -145,6 +146,10 @@ class ScidashClientMapper(object):
             (
                 'model_instance/attrs',
                 'model/py/state#attrs'
+                ),
+            (
+                'related_data',
+                'related_data',
                 )
             ]
 
