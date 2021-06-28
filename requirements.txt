@@ -2,3 +2,4 @@ requests
 cerberus
 six
 dpath
+git+git://github.com/scidash/sciunit@master

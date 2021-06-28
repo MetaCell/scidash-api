@@ -1,3 +1,5 @@
+import os
+import binascii
 import logging
 import copy
 
@@ -157,7 +159,7 @@ class ScidashClientMapper(object):
         self.errors = []
         self.validator = ScidashClientDataValidator()
 
-    def convert(self, raw_data=None, strict=False):
+    def convert(self, raw_score_data=None, strict=False):
         """convert
         main method for converting
 
@@ -166,10 +168,11 @@ class ScidashClientMapper(object):
         :returns dict
         """
 
-        if raw_data is None:
-            return raw_data
+        if raw_score_data is None:
+            return raw_score_data
 
-        raw_data = raw_data['py/state']
+        raw_data = raw_score_data['py/state']
+        _id = raw_score_data['_id']
 
         if not self.validator.validate_score(raw_data) and strict:
             raise ScidashClientException('CLIENT -> INVALID DATA: '
@@ -193,7 +196,7 @@ class ScidashClientMapper(object):
             try:
                 dpath.util.set(result, item, dpath.util.get(raw_data, address,'#'))
             except KeyError:
-                logger.info("Optional value {} is not found".format(item))
+                logger.debug("Optional value {} is not found".format(item))
 
         for capability in dpath.util.get(raw_data, 'model#py/state#capabilities','#'):
             result.get('model_instance').get('model_class') \
@@ -205,26 +208,22 @@ class ScidashClientMapper(object):
             for test_suite in dpath.util.get(raw_data, 'test#py/state#test_suites','#'):
                 result.get('test_instance').get('test_suites').append({
                                                 'name': test_suite.get('name'),
-                                                'hash': test_suite.get('hash', binascii.b2a_hex(os.urandom(15)))
+                                                'hash': _id
                                             })
         except KeyError:
             pass
 
-        import os,binascii
         model_instance_hash_id = '{}_{}'.format(
-                raw_data.get('model').get('hash', binascii.b2a_hex(os.urandom(15))),
-                raw_data.get('model').get('_id', -1)
-                )
+                raw_data.get('model').get('hash', '?'), #binascii.b2a_hex(os.urandom(15))),
+                _id)
 
         test_instance_hash_id = '{}_{}'.format(
-                raw_data.get('test').get('hash', binascii.b2a_hex(os.urandom(15))),
-                raw_data.get('test').get('_id', -1)
-                )
+                raw_data.get('test').get('hash', '?'), #, binascii.b2a_hex(os.urandom(15))),
+                _id)
 
         score_instance_hash_id = '{}_{}'.format(
-                raw_data.get('hash', binascii.b2a_hex(os.urandom(15))),
-                raw_data.get('_id', -1)
-                )
+                raw_score_data.get('hash', '?'), #, binascii.b2a_hex(os.urandom(15))),
+                _id)
 
         sort_key = raw_data.get('norm_score') if not raw_data.get('sort_key',
                                                               False) else \

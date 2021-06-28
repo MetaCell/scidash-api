@@ -1,7 +1,11 @@
 from __future__ import unicode_literals, print_function
 import json
 import logging
+import sciunit
 from platform import platform, system
+
+import os
+import binascii
 
 import jsonpickle
 import requests
@@ -17,40 +21,9 @@ from jsonpickle.handlers import BaseHandler
 
 logger = logging.getLogger(__name__)
 
-class QuantitiesHandler(BaseHandler):
-    def flatten(self, obj, data):
-        """This methods flattens all quantities into a base and units"""
-        result = {'base': str(obj.base.tolist()),
-                  'units': str(obj._dimensionality)}
-        if self.context.unpicklable:
-            data['py/quantity'] = result
-        else:
-            data = result
-        return data
-    def restore(self, data):
-        """If jsonpickle.encode() is called with unpicklable=True then
-        this method is used by jsonpickle.decode() to unserialize."""
-        obj = data['py/quantity']
-        base = np.array(obj['base'], dtype=np.float64)
-        units = obj['units']
-        return pq.Quantity(base, units)
-
-class UnitQuantitiesHandler(BaseHandler):
-    """Same as above but for unit quantities e.g. Test.units"""
-    def flatten(self, obj, data):
-        result = str(obj._dimensionality)
-        if self.context.unpicklable:
-            data['py/unitquantity'] = result
-        else:
-            data = result
-        return data
-    def restore(self, data):
-        units = data['py/unitquantity']
-        return pq.unit_registry[units]
-
-# Register these handlers
-jsonpickle.handlers.register(pq.Quantity, handler=QuantitiesHandler)
-jsonpickle.handlers.register(pq.UnitQuantity, handler=UnitQuantitiesHandler)
+# Register the sciunit quantity handlers
+jsonpickle.handlers.register(pq.Quantity, handler=sciunit.base.QuantitiesHandler)
+jsonpickle.handlers.register(pq.UnitQuantity, handler=sciunit.base.UnitQuantitiesHandler)
 
 class ScidashClient(object):
 
@@ -140,10 +113,14 @@ class ScidashClient(object):
         :returns: self
         """
 
-        data = score_data.json(unpicklable=True, simplify=False, string=False)
-        related_data = json.loads(jsonpickle.encode(score_data.related_data, make_refs=False, unpicklable=True))
-        data['py/state']['related_data'] = related_data
-           
+        if isinstance(score_data, dict):
+            data = score_data
+        else:
+            data = score_data.json(unpicklable=True, string=False)
+            related_data = json.loads(jsonpickle.encode(score_data.related_data, make_refs=False, unpicklable=True))
+            data['related_data'] = related_data    
+            data['_id'] = score_data._id
+
         self.data  = self.mapper.convert(data)
 
         if self.data is not None:
@@ -164,6 +141,8 @@ class ScidashClient(object):
         """
 
         if data is not None:
+            if not hasattr(data, '_id'):
+                setattr(data,'_id',binascii.b2a_hex(os.urandom(15)).decode("utf-8")) # generate a unique id
             self.set_data(data)
 
         if self.data is None:
@@ -172,7 +151,6 @@ class ScidashClient(object):
         files = {
                 'file': (self.config.get('file_name'), json.dumps(self.data))
                 }
-
         headers = self.get_headers()
 
         upload_url = \
@@ -215,13 +193,14 @@ class ScidashClient(object):
         if isinstance(suite, six.string_types):
             suite = json.loads(suite)
         elif not isinstance(suite, dict):
+            suite_hash_id = binascii.b2a_hex(os.urandom(15)).decode("utf-8") 
             suite = json.loads(suite.json(add_props=True, string=True))
+            suite.update({"hash_id": suite_hash_id})
 
         if isinstance(score_matrix, six.string_types):
             score_matrix = json.loads(score_matrix)
         elif not isinstance(score_matrix, dict):
-            score_matrix = json.loads(score_matrix.json(add_props=True,
-                string=True))
+            pass
 
         hash_list = []
 
@@ -229,21 +208,16 @@ class ScidashClient(object):
             hash_list.append(test.get('hash'))
 
         responses = []
-        raw_score_list = score_matrix.get('scores')
 
-        flat_score_list = [score for score_list in raw_score_list for score in
-                score_list]
+        flat_score_list = [score for score_list in score_matrix.values for score in score_list]
 
-        for score in flat_score_list:
-            if score.get('test').get('hash') in hash_list:
-                if 'test_suites' not in score.get('test'):
-                    score.get('test').update({
-                        'test_suites': []
-                        })
+        for s in flat_score_list:
+            score = json.loads(s.json())
+            if 'test_suites' not in score.get('test'):
+                setattr(s.test, 'test_suites', [suite])
 
-                score.get('test').get('test_suites').append(suite)
-
-            responses.append(self.upload_test_score(data=score))
+            setattr(s,'_id', suite_hash_id)
+            responses.append(self.upload_test_score(data=s))
 
         return responses
 
