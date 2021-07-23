@@ -2,6 +2,8 @@ import os
 import re
 import json
 import requests
+import quantities as pq
+
 from random import randint
 from requests.utils import quote
 from scidash_api import client
@@ -16,6 +18,8 @@ class ScidashRestApiClient(object):
         self.api_model_instance_url = f'{base_url}/api/model-instances/'
         self.api_compatibility_url = f'{base_url}/api/compatibility/'
         self.api_schedule_url = f'{base_url}/api/schedule/'
+        self.model_classes = None
+        self.model_from_url = None
         client_instance = client.ScidashClient(
             config={'base_url': base_url},
             hostname=os.uname().nodename)
@@ -54,9 +58,39 @@ class ScidashRestApiClient(object):
         found["class_name"] = re.sub(r' (\(.*\))', '', found["class_name"])
         return found
 
-    def create_test(self, test_instance, test_class_import_path):
-        test_instance['hash_id'] = self._generateHashId(test_instance['name'])
-        test_instance['test_class'] = self._get_test_class(test_class_import_path)
+    @classmethod
+    def _toValue(cls, v):
+        if isinstance(v, pq.quantity.Quantity):
+            return v.item()
+        if isinstance(v, dict):
+            # skipping dict param/observation item
+            return None
+        return v
+
+    def build_test_instance_dict(self, test, name, description, tags=[]):
+        klass = test.__class__
+        import_path = f'{klass.__module__}.{klass.__name__}'
+        observation = {}
+        for k, v in test.observation.items():
+            val = self._toValue(v)
+            if val:
+                observation[k] = str(int(val))
+        params = {}
+        for k, v in test.params.items():
+            val = self._toValue(v)
+            if val:
+                params[k] = val
+        return {
+            'name': name,
+            'description': description,
+            'hash_id': self._generateHashId(name),
+            'test_class': self._get_test_class(import_path),
+            'tags': tags,
+            'observation': observation,
+            'params': params
+        }
+
+    def create_test(self, test_instance):
         r = requests.post(
                 self.api_test_instance_url,
                 headers=self.headers,
@@ -65,17 +99,32 @@ class ScidashRestApiClient(object):
             return json.loads(r.content)
         raise Exception(r.text)
 
-    def get_model_classes(self, model_url):
-        url = quote(model_url)
+    def build_model_instance_dict(self, model, name, run_params, model_class_url, tags=[], backend=None):
+        if (not self.model_from_url) or (self.model_from_url != model_class_url) or (not self.model_classes):
+            # refresh the model classes
+            self.model_from_url = model_class_url
+            self.model_classes = self.get_model_classes()
+            # get the model class from the model classes list
+        model_class = list(filter(lambda mc: (mc['class_name'] == model.__class__.__name__), self.model_classes))[0]
+        return {
+            'name': name,
+            'url': model_class_url,
+            'hash_id': self._generateHashId(name),
+            'tags': tags,
+            'backend': backend,
+            'model_class': model_class,
+            'status': 'a',
+            'run_params': run_params      
+        }
+
+    def get_model_classes(self, model_url=None):
+        url = quote(self.model_from_url if not model_url else model_url)
         r = requests.get(
                 f'{self.api_model_class_url}?model_url={url}',
                 headers=self.headers)
         return json.loads(r.content)
 
-    def create_model(self, model_instance, model_class):
-        model_instance['hash_id'] = self._generateHashId(model_instance['name'])
-        model_instance['model_class'] = model_class
-        model_instance['status'] = 'a'
+    def create_model(self, model_instance):
         r = requests.post(
                 self.api_model_instance_url,
                 headers=self.headers,
